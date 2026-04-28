@@ -84,7 +84,7 @@ echo "  ${GREEN}✓ Node.js ${NODE_VER} 확인되었습니다.${NC}"
 # 3. 보조 도구(Git / 코드 에디터 / Python / gh / jq) 점검 및 자동 설치
 # ============================================================
 echo ""
-echo "${YELLOW}[3/8] 보조 도구(Git / 코드 에디터 / Python / gh / jq) 점검 중...${NC}"
+echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf) 점검 중...${NC}"
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 brew로 자동 설치
 if command -v git &>/dev/null; then
@@ -145,6 +145,51 @@ else
   else
     echo "  ${YELLOW}✗ jq 자동 설치 실패. 수동 설치: https://jqlang.github.io/jq/download/${NC}"
   fi
+fi
+
+# OpenJDK: Java 런타임 (PDF 변환 도구 opendataloader-pdf 등에 필요)
+if command -v java &>/dev/null; then
+  echo "  ${GREEN}✓ Java(OpenJDK) 확인됨 ($(java -version 2>&1 | head -n1))${NC}"
+else
+  echo "  · OpenJDK 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install openjdk; then
+    # keg-only 이므로 셸 PATH에 즉시 노출 (영구 등록은 [8/8] 셸 환경 단계에서 처리)
+    if [[ -d /opt/homebrew/opt/openjdk/bin ]]; then
+      export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+    elif [[ -d /usr/local/opt/openjdk/bin ]]; then
+      export PATH="/usr/local/opt/openjdk/bin:$PATH"
+    fi
+    echo "  ${GREEN}✓ OpenJDK 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ OpenJDK 자동 설치 실패. 수동: brew install openjdk${NC}"
+  fi
+fi
+
+# pipx: 격리된 Python CLI 도구 설치 (opendataloader-pdf 등)
+if command -v pipx &>/dev/null; then
+  echo "  ${GREEN}✓ pipx 확인됨 ($(pipx --version))${NC}"
+else
+  echo "  · pipx 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install pipx; then
+    pipx ensurepath >/dev/null 2>&1 || true
+    echo "  ${GREEN}✓ pipx 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ pipx 자동 설치 실패. 수동: brew install pipx${NC}"
+  fi
+fi
+
+# opendataloader-pdf: PDF → Markdown/JSON 변환 CLI (내부적으로 Java 11+ 사용)
+if command -v opendataloader-pdf &>/dev/null; then
+  echo "  ${GREEN}✓ opendataloader-pdf 확인됨${NC}"
+elif command -v pipx &>/dev/null; then
+  echo "  · opendataloader-pdf 미설치. pipx로 설치를 시도합니다..."
+  if pipx install opendataloader-pdf; then
+    echo "  ${GREEN}✓ opendataloader-pdf 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ opendataloader-pdf 설치 실패. 수동: pipx install opendataloader-pdf${NC}"
+  fi
+else
+  echo "  ${GRAY}· pipx가 없어 opendataloader-pdf 설치를 건너뜁니다.${NC}"
 fi
 
 # ============================================================
@@ -270,6 +315,29 @@ else
     echo "alias cc='claude --dangerously-skip-permissions'"
   } >> "$SHELL_RC"
   echo "  ${GREEN}✓ alias cc 등록됨 ($SHELL_RC)${NC}"
+fi
+
+# (1-2) OpenJDK PATH 영구 등록 (keg-only 이므로 brew가 자동으로 PATH에 넣지 않음)
+if grep -q "openjdk/bin" "$SHELL_RC" 2>/dev/null; then
+  echo "  ${GRAY}· OpenJDK PATH 이미 등록됨${NC}"
+else
+  if [[ -d /opt/homebrew/opt/openjdk/bin ]]; then
+    {
+      echo ""
+      echo "# === [setup.sh] OpenJDK PATH (opendataloader-pdf 등 Java 도구용) ==="
+      echo 'export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"'
+    } >> "$SHELL_RC"
+    echo "  ${GREEN}✓ OpenJDK PATH 등록됨 (Apple Silicon)${NC}"
+  elif [[ -d /usr/local/opt/openjdk/bin ]]; then
+    {
+      echo ""
+      echo "# === [setup.sh] OpenJDK PATH (opendataloader-pdf 등 Java 도구용) ==="
+      echo 'export PATH="/usr/local/opt/openjdk/bin:$PATH"'
+    } >> "$SHELL_RC"
+    echo "  ${GREEN}✓ OpenJDK PATH 등록됨 (Intel)${NC}"
+  else
+    echo "  ${GRAY}· OpenJDK 미설치 상태 — PATH 등록 건너뜀${NC}"
+  fi
 fi
 
 # (2) zsh 자동완성 (Tab 키 동작)

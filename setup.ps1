@@ -69,9 +69,9 @@ if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
 $nodeVer = (& node --version) 2>$null
 Write-Host "  ✓ Node.js $nodeVer 확인되었습니다." -ForegroundColor Green
 
-# 3. 보조 도구(Git, 코드 에디터, Python, gh) 점검 및 자동 설치
+# 3. 보조 도구(Git, 코드 에디터, Python, gh, OpenJDK, pipx, opendataloader-pdf) 점검 및 자동 설치
 Write-Host "
-[3/8] 보조 도구(Git / 코드 에디터 / Python / gh) 점검 중..." -ForegroundColor Yellow
+[3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf) 점검 중..." -ForegroundColor Yellow
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 winget으로 자동 설치
 if (Get-Command git -ErrorAction SilentlyContinue) {
@@ -135,6 +135,59 @@ if (Get-Command gh -ErrorAction SilentlyContinue) {
         Write-Warning "  ✗ winget을 찾을 수 없습니다. 수동 설치가 필요합니다."
         Write-Host "    설치 링크: https://cli.github.com/" -ForegroundColor Cyan
     }
+}
+
+# OpenJDK: Java 런타임 (PDF 변환 도구 opendataloader-pdf 등에 필요)
+if (Get-Command java -ErrorAction SilentlyContinue) {
+    $javaLine = (& java -version 2>&1 | Select-Object -First 1)
+    Write-Host "  ✓ Java 확인됨 ($javaLine)" -ForegroundColor Green
+} else {
+    Write-Host "  · OpenJDK 미설치. winget으로 자동 설치를 시도합니다..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install -e --id Microsoft.OpenJDK.21 --silent --accept-package-agreements --accept-source-agreements
+        Reload-Path
+        if (Get-Command java -ErrorAction SilentlyContinue) {
+            Write-Host "  ✓ OpenJDK 설치 완료" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ OpenJDK 자동 설치 실패. 새 터미널에서 'java -version' 확인 후 재실행해 주세요."
+            Write-Host "    수동 설치: https://learn.microsoft.com/java/openjdk/download" -ForegroundColor Cyan
+        }
+    } else {
+        Write-Warning "  ✗ winget을 찾을 수 없어 OpenJDK 자동 설치 불가."
+        Write-Host "    수동 설치: https://learn.microsoft.com/java/openjdk/download" -ForegroundColor Cyan
+    }
+}
+
+# pipx: 격리된 Python CLI 도구 설치 (opendataloader-pdf 등)
+if (Get-Command pipx -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ pipx 확인됨" -ForegroundColor Green
+} elseif (Get-Command python -ErrorAction SilentlyContinue) {
+    Write-Host "  · pipx 미설치. pip로 자동 설치를 시도합니다..." -ForegroundColor Gray
+    python -m pip install --user pipx 2>&1 | Out-Null
+    python -m pipx ensurepath 2>&1 | Out-Null
+    Reload-Path
+    if (Get-Command pipx -ErrorAction SilentlyContinue) {
+        Write-Host "  ✓ pipx 설치 완료" -ForegroundColor Green
+    } else {
+        Write-Warning "  ✗ pipx 설치 실패. 새 터미널에서 'pipx --version' 확인 후 재시도해 주세요."
+    }
+} else {
+    Write-Host "  · Python 미설치 → pipx 설치를 건너뜁니다. (opendataloader-pdf 사용 시 Python 필요)" -ForegroundColor Gray
+}
+
+# opendataloader-pdf: PDF → Markdown/JSON 변환 CLI (내부적으로 Java 11+ 사용)
+if (Get-Command opendataloader-pdf -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ opendataloader-pdf 확인됨" -ForegroundColor Green
+} elseif (Get-Command pipx -ErrorAction SilentlyContinue) {
+    Write-Host "  · opendataloader-pdf 미설치. pipx로 설치를 시도합니다..." -ForegroundColor Gray
+    pipx install opendataloader-pdf 2>&1 | Out-Null
+    if (Get-Command opendataloader-pdf -ErrorAction SilentlyContinue) {
+        Write-Host "  ✓ opendataloader-pdf 설치 완료" -ForegroundColor Green
+    } else {
+        Write-Warning "  ✗ opendataloader-pdf 설치 실패. 수동: pipx install opendataloader-pdf"
+    }
+} else {
+    Write-Host "  · pipx가 없어 opendataloader-pdf 설치를 건너뜁니다." -ForegroundColor Gray
 }
 
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
