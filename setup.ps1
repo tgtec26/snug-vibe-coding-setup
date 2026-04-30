@@ -34,10 +34,28 @@ if (-not $isAdmin) {
     Write-Host "  → 설치 실패 시 PowerShell 7을 '관리자 권한으로 실행' 후 재시도해 주세요." -ForegroundColor Cyan
 }
 
-# === PATH 환경변수 새로고침 헬퍼 ===
-# winget으로 새 도구를 설치한 직후 같은 세션에서 명령을 호출할 수 있도록 PATH를 다시 읽어 들인다.
+# === PATH 환경변수 새로고침 + 콘솔 VT 모드 복원 헬퍼 ===
+# winget 등 일부 설치 프로그램이 실행되면 콘솔 VT 모드(ENABLE_VIRTUAL_TERMINAL_PROCESSING)를
+# 꺼버려 이후 ANSI 색상 코드가 두 글자씩 겹쳐 출력되는 버그가 발생한다.
+# kernel32 SetConsoleMode API로 플래그를 다시 켜서 복원한다.
+function Reset-ConsoleVT {
+    try {
+        Add-Type -MemberDefinition @'
+[DllImport("kernel32.dll")] public static extern bool GetConsoleMode(IntPtr h, out uint m);
+[DllImport("kernel32.dll")] public static extern bool SetConsoleMode(IntPtr h, uint m);
+[DllImport("kernel32.dll")] public static extern IntPtr GetStdHandle(int n);
+'@ -Name 'KernelVT' -Namespace 'Win32' -ErrorAction SilentlyContinue
+    } catch {}
+    try {
+        $h = [Win32.KernelVT]::GetStdHandle(-11)   # STD_OUTPUT_HANDLE
+        $m = 0
+        [void][Win32.KernelVT]::GetConsoleMode($h, [ref]$m)
+        [void][Win32.KernelVT]::SetConsoleMode($h, $m -bor 0x0004)  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+    } catch {}
+}
 function Reload-Path {
     $env:PATH = [System.Environment]::GetEnvironmentVariable('PATH','Machine') + ";" + [System.Environment]::GetEnvironmentVariable('PATH','User')
+    Reset-ConsoleVT
 }
 
 Write-Host "==========================================================" -ForegroundColor Cyan
@@ -125,6 +143,7 @@ if (Get-Command gh -ErrorAction SilentlyContinue) {
     Write-Host "  · GitHub CLI(gh) 미설치. winget으로 자동 설치를 시도합니다..." -ForegroundColor Gray
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         winget install --id GitHub.cli -e --silent --accept-package-agreements --accept-source-agreements
+        Reset-ConsoleVT
         if (Get-Command gh -ErrorAction SilentlyContinue) {
             Write-Host "  ✓ GitHub CLI(gh) 설치 완료. 새 터미널을 열어 'gh' 명령을 사용하세요." -ForegroundColor Green
         } else {
@@ -159,20 +178,32 @@ if (Get-Command java -ErrorAction SilentlyContinue) {
 }
 
 # pipx: 격리된 Python CLI 도구 설치 (opendataloader-pdf 등)
+# pip install --user 방식은 Windows에서 PATH 반영이 불안정하므로 scoop을 사용한다.
 if (Get-Command pipx -ErrorAction SilentlyContinue) {
     Write-Host "  ✓ pipx 확인됨" -ForegroundColor Green
-} elseif (Get-Command python -ErrorAction SilentlyContinue) {
-    Write-Host "  · pipx 미설치. pip로 자동 설치를 시도합니다..." -ForegroundColor Gray
-    python -m pip install --user pipx 2>&1 | Out-Null
-    python -m pipx ensurepath 2>&1 | Out-Null
-    Reload-Path
-    if (Get-Command pipx -ErrorAction SilentlyContinue) {
-        Write-Host "  ✓ pipx 설치 완료" -ForegroundColor Green
-    } else {
-        Write-Warning "  ✗ pipx 설치 실패. 새 터미널에서 'pipx --version' 확인 후 재시도해 주세요."
-    }
 } else {
-    Write-Host "  · Python 미설치 → pipx 설치를 건너뜁니다. (opendataloader-pdf 사용 시 Python 필요)" -ForegroundColor Gray
+    # scoop이 없으면 먼저 설치
+    if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+        Write-Host "  · scoop 미설치. pipx 설치를 위해 scoop을 먼저 설치합니다..." -ForegroundColor Gray
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+        Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+        Reload-Path
+    }
+    if (Get-Command scoop -ErrorAction SilentlyContinue) {
+        Write-Host "  · pipx 미설치. scoop으로 설치를 시도합니다..." -ForegroundColor Gray
+        scoop install pipx 2>&1 | Out-Null
+        Reload-Path
+        if (Get-Command pipx -ErrorAction SilentlyContinue) {
+            pipx ensurepath 2>&1 | Out-Null
+            Write-Host "  ✓ pipx 설치 완료 (via scoop)" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ pipx 설치 실패. 수동: scoop install pipx"
+        }
+    } else {
+        Write-Warning "  ✗ scoop 설치 실패. 아래 명령어로 수동 설치 후 재실행하세요."
+        Write-Host "    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser" -ForegroundColor Cyan
+        Write-Host "    Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression" -ForegroundColor Cyan
+    }
 }
 
 # opendataloader-pdf: PDF → Markdown/JSON 변환 CLI (내부적으로 Java 11+ 사용)
