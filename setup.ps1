@@ -349,6 +349,18 @@ if (`$PSVersionTable.PSVersion.Major -ge 7) {
     Write-Host "  · 자동완성 키 바인딩 이미 등록됨" -ForegroundColor Gray
 }
 
+if ($profileContent -notmatch "function cc") {
+    $ccBlock = @"
+
+# === [setup_distribution] cc 단축 별칭: claude --dangerously-skip-permissions ===
+function cc { claude --dangerously-skip-permissions @args }
+"@
+    Add-Content -Path $profilePath -Value $ccBlock -Encoding utf8
+    Write-Host "  ✓ 'cc' 단축 명령 등록됨 (= claude --dangerously-skip-permissions)" -ForegroundColor Green
+} else {
+    Write-Host "  · 'cc' 단축 명령 이미 등록됨" -ForegroundColor Gray
+}
+
 Write-Host "
 ==========================================================" -ForegroundColor Green
 Write-Host " 🎉 모든 필수 도구 설치가 완료되었습니다!" -ForegroundColor Green
