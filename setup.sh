@@ -301,8 +301,8 @@ fi
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 # ============================================================
 echo ""
-echo "${YELLOW}[7/8] Claude Code 추가 스킬(impeccable / senior-frontend) 설치 중...${NC}"
-echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 향상 도구)${NC}"
+echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers) 설치 중...${NC}"
+echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화)${NC}"
 
 if npx --yes skills add pbakaus/impeccable; then
   echo "  ${GREEN}✓ impeccable 스킬 설치 완료${NC}"
@@ -319,6 +319,32 @@ else
   else
     echo "  ${YELLOW}✗ senior-frontend 스킬 설치 실패${NC}"
   fi
+fi
+
+# Claude Code 공식 마켓플레이스 플러그인 (anthropics/claude-plugins-official)
+# - hookify    : 대화 분석/명시적 지시로부터 AI 행동 hook 자동 생성·관리
+# - superpowers: 브레인스토밍/계획/TDD/디버깅 등 워크플로우 자동화 스킬 모음
+if command -v claude &>/dev/null; then
+  CLAUDE_PLUGIN_LIST=$(claude plugin list 2>/dev/null || echo "")
+
+  install_claude_plugin() {
+    local name="$1"
+    if echo "$CLAUDE_PLUGIN_LIST" | grep -q "${name}@"; then
+      echo "  ${GRAY}· ${name} 플러그인 이미 설치됨${NC}"
+    else
+      echo "  > ${name} 플러그인 설치 중..."
+      if claude plugin install "${name}@claude-plugins-official" >/dev/null 2>&1; then
+        echo "  ${GREEN}✓ ${name} 플러그인 설치 완료${NC}"
+      else
+        echo "  ${YELLOW}✗ ${name} 플러그인 설치 실패 (Claude Code 로그인 후 재시도)${NC}"
+      fi
+    fi
+  }
+
+  install_claude_plugin "hookify"
+  install_claude_plugin "superpowers"
+else
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다.${NC}"
 fi
 
 # ============================================================

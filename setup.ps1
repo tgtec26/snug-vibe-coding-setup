@@ -340,8 +340,8 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 # pbakaus/impeccable: 디자인 보조 스킬 모음 (frontend-design, polish, delight, animate, audit 등)
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 Write-Host "
-[7/8] Claude Code 추가 스킬(impeccable / senior-frontend) 설치 중..." -ForegroundColor Yellow
-Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 향상 도구)" -ForegroundColor Gray
+[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers) 설치 중..." -ForegroundColor Yellow
+Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화)" -ForegroundColor Gray
 
 npx --yes skills add pbakaus/impeccable
 if ($?) { Write-Host "  ✓ impeccable 스킬 설치 완료" -ForegroundColor Green }
@@ -354,6 +354,31 @@ if (Test-Path (Join-Path $skillRoot "senior-frontend")) {
     npx -y claude-code-templates@latest --skill development/senior-frontend
     if ($?) { Write-Host "  ✓ senior-frontend 스킬 설치 완료" -ForegroundColor Green }
     else { Write-Warning "  ✗ senior-frontend 스킬 설치 실패" }
+}
+
+# Claude Code 공식 마켓플레이스 플러그인 (anthropics/claude-plugins-official)
+# - hookify    : 대화 분석/명시적 지시로부터 AI 행동 hook 자동 생성·관리
+# - superpowers: 브레인스토밍/계획/TDD/디버깅 등 워크플로우 자동화 스킬 모음
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    $pluginList = (claude plugin list 2>$null) | Out-String
+    function Install-ClaudePlugin {
+        param([string]$Name)
+        if ($pluginList -match "${Name}@") {
+            Write-Host "  · $Name 플러그인 이미 설치됨" -ForegroundColor Gray
+        } else {
+            Write-Host "  > $Name 플러그인 설치 중..."
+            claude plugin install "${Name}@claude-plugins-official" 2>&1 | Out-Null
+            if ($?) {
+                Write-Host "  ✓ $Name 플러그인 설치 완료" -ForegroundColor Green
+            } else {
+                Write-Warning "  ✗ $Name 플러그인 설치 실패 (Claude Code 로그인 후 재시도)"
+            }
+        }
+    }
+    Install-ClaudePlugin "hookify"
+    Install-ClaudePlugin "superpowers"
+} else {
+    Write-Warning "  claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다."
 }
 
 # 8. PowerShell 7 프로필에 PSReadLine 자동완성 키 등록
