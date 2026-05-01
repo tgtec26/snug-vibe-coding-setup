@@ -84,7 +84,7 @@ echo "  ${GREEN}✓ Node.js ${NODE_VER} 확인되었습니다.${NC}"
 # 3. 보조 도구(Git / 코드 에디터 / Python / gh / jq) 점검 및 자동 설치
 # ============================================================
 echo ""
-echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena) 점검 중...${NC}"
+echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena / rtk) 점검 중...${NC}"
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 brew로 자동 설치
 if command -v git &>/dev/null; then
@@ -217,6 +217,19 @@ elif command -v uv &>/dev/null; then
   fi
 else
   echo "  ${GRAY}· uv가 없어 serena 설치를 건너뜁니다.${NC}"
+fi
+
+# rtk: AI CLI(Claude/Gemini)의 Bash 출력을 자동 압축해 LLM 토큰 60-90% 절감
+# (macOS 전용. Windows 네이티브 미지원이라 setup.ps1에는 포함하지 않음)
+if command -v rtk &>/dev/null; then
+  echo "  ${GREEN}✓ rtk 확인됨${NC}"
+else
+  echo "  · rtk 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install rtk; then
+    echo "  ${GREEN}✓ rtk 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ rtk 자동 설치 실패. 수동: brew install rtk${NC}"
+  fi
 fi
 
 # ============================================================
