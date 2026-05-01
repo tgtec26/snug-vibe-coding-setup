@@ -84,7 +84,7 @@ echo "  ${GREEN}✓ Node.js ${NODE_VER} 확인되었습니다.${NC}"
 # 3. 보조 도구(Git / 코드 에디터 / Python / gh / jq) 점검 및 자동 설치
 # ============================================================
 echo ""
-echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf) 점검 중...${NC}"
+echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena) 점검 중...${NC}"
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 brew로 자동 설치
 if command -v git &>/dev/null; then
@@ -192,6 +192,33 @@ else
   echo "  ${GRAY}· pipx가 없어 opendataloader-pdf 설치를 건너뜁니다.${NC}"
 fi
 
+# uv: 빠른 Python 패키지 매니저 (Serena 등 Python 기반 MCP/도구 설치에 사용)
+if command -v uv &>/dev/null; then
+  echo "  ${GREEN}✓ uv 확인됨 ($(uv --version))${NC}"
+else
+  echo "  · uv 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install uv; then
+    echo "  ${GREEN}✓ uv 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ uv 자동 설치 실패. 수동: brew install uv${NC}"
+  fi
+fi
+
+# serena: 코드베이스 시맨틱 분석 MCP 서버 (uv tool 로 격리 설치)
+# 공식 권장: 마켓플레이스 설치 금지 → 반드시 uv tool install 경로 사용
+if command -v serena &>/dev/null; then
+  echo "  ${GREEN}✓ serena 확인됨${NC}"
+elif command -v uv &>/dev/null; then
+  echo "  · serena 미설치. uv tool 로 설치를 시도합니다..."
+  if uv tool install -p 3.13 serena-agent@latest --prerelease=allow; then
+    echo "  ${GREEN}✓ serena 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ serena 설치 실패. 수동: uv tool install -p 3.13 serena-agent@latest --prerelease=allow${NC}"
+  fi
+else
+  echo "  ${GRAY}· uv가 없어 serena 설치를 건너뜁니다.${NC}"
+fi
+
 # ============================================================
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
 # ============================================================
@@ -263,6 +290,7 @@ if command -v claude &>/dev/null; then
   add_mcp "playwright"           "npx @playwright/mcp@latest"                              "브라우저 자동화/스크린샷"
   add_mcp "context7"             "npx -y @upstash/context7-mcp"                            "라이브러리 공식 문서 검색"
   add_mcp "sequential-thinking"  "npx -y @modelcontextprotocol/server-sequential-thinking" "단계적 사고 도구"
+  add_mcp "serena"               "serena start-mcp-server --context claude-code --project-from-cwd" "코드베이스 시맨틱 분석"
 else
   echo "  ${YELLOW}claude 명령을 찾을 수 없어 MCP 등록을 건너뜁니다. (Claude Code 설치 후 재실행)${NC}"
 fi
@@ -384,6 +412,6 @@ echo "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장
 echo "5. 새 터미널 창을 열어야 alias cc / 자동완성 설정이 적용됩니다."
 echo "   ${CYAN}또는 즉시 적용: source $SHELL_RC${NC}"
 echo "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-echo "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/context7/sequential-thinking) 동작을 확인하세요."
+echo "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/context7/sequential-thinking/serena) 동작을 확인하세요."
 echo "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
 echo ""

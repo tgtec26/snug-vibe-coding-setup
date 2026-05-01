@@ -89,7 +89,7 @@ Write-Host "  ✓ Node.js $nodeVer 확인되었습니다." -ForegroundColor Gree
 
 # 3. 보조 도구(Git, 코드 에디터, Python, gh, OpenJDK, pipx, opendataloader-pdf) 점검 및 자동 설치
 Write-Host "
-[3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf) 점검 중..." -ForegroundColor Yellow
+[3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf / uv / serena) 점검 중..." -ForegroundColor Yellow
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 winget으로 자동 설치
 if (Get-Command git -ErrorAction SilentlyContinue) {
@@ -221,6 +221,43 @@ if (Get-Command opendataloader-pdf -ErrorAction SilentlyContinue) {
     Write-Host "  · pipx가 없어 opendataloader-pdf 설치를 건너뜁니다." -ForegroundColor Gray
 }
 
+# uv: 빠른 Python 패키지 매니저 (Serena 등 Python 기반 MCP/도구 설치에 사용)
+if (Get-Command uv -ErrorAction SilentlyContinue) {
+    $uvVer = (& uv --version) 2>$null
+    Write-Host "  ✓ uv 확인됨 ($uvVer)" -ForegroundColor Green
+} else {
+    Write-Host "  · uv 미설치. winget으로 자동 설치를 시도합니다..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install -e --id astral-sh.uv --silent --accept-package-agreements --accept-source-agreements
+        Reload-Path
+        if (Get-Command uv -ErrorAction SilentlyContinue) {
+            Write-Host "  ✓ uv 설치 완료" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ uv 자동 설치 실패. 수동: winget install astral-sh.uv"
+        }
+    } else {
+        Write-Warning "  ✗ winget을 찾을 수 없어 uv 자동 설치 불가."
+        Write-Host "    수동 설치: https://docs.astral.sh/uv/getting-started/installation/" -ForegroundColor Cyan
+    }
+}
+
+# serena: 코드베이스 시맨틱 분석 MCP 서버 (uv tool 로 격리 설치)
+# 공식 권장: 마켓플레이스 설치 금지 → 반드시 uv tool install 경로 사용
+if (Get-Command serena -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ serena 확인됨" -ForegroundColor Green
+} elseif (Get-Command uv -ErrorAction SilentlyContinue) {
+    Write-Host "  · serena 미설치. uv tool 로 설치를 시도합니다..." -ForegroundColor Gray
+    uv tool install -p 3.13 serena-agent@latest --prerelease=allow 2>&1 | Out-Null
+    Reload-Path
+    if (Get-Command serena -ErrorAction SilentlyContinue) {
+        Write-Host "  ✓ serena 설치 완료" -ForegroundColor Green
+    } else {
+        Write-Warning "  ✗ serena 설치 실패. 수동: uv tool install -p 3.13 serena-agent@latest --prerelease=allow"
+    }
+} else {
+    Write-Host "  · uv가 없어 serena 설치를 건너뜁니다." -ForegroundColor Gray
+}
+
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
 Write-Host "
 [4/8] 인공지능 / 개발 CLI 도구 설치 및 업데이트 중 (잠시만 기다려 주세요)..." -ForegroundColor Yellow
@@ -294,6 +331,7 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
     Add-Mcp "playwright"           "npx @playwright/mcp@latest"                                     "브라우저 자동화/스크린샷"
     Add-Mcp "context7"             "npx -y @upstash/context7-mcp"                                   "라이브러리 공식 문서 검색"
     Add-Mcp "sequential-thinking"  "npx -y @modelcontextprotocol/server-sequential-thinking"        "단계적 사고 도구"
+    Add-Mcp "serena"               "serena start-mcp-server --context claude-code --project-from-cwd" "코드베이스 시맨틱 분석"
 } else {
     Write-Warning "  claude 명령을 찾을 수 없어 MCP 등록을 건너뜁니다. (Claude Code 설치 후 재실행)"
 }
@@ -373,7 +411,7 @@ Write-Host "3. 'firebase login' 으로 Firebase 인증을 완료하세요. (Fire
 Write-Host "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장소 사용 시)"
 Write-Host "5. 새 PowerShell 7 창을 열어야 자동완성 키(Tab/→)가 적용됩니다."
 Write-Host "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-Write-Host "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/context7/sequential-thinking) 동작을 확인하세요."
+Write-Host "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/context7/sequential-thinking/serena) 동작을 확인하세요."
 Write-Host "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
 Write-Host "
 아무 키나 누르면 창이 닫힙니다..."
