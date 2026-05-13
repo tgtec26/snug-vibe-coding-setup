@@ -89,7 +89,7 @@ Write-Host "  ✓ Node.js $nodeVer 확인되었습니다." -ForegroundColor Gree
 
 # 3. 보조 도구(Git, 코드 에디터, Python, gh, OpenJDK, pipx, opendataloader-pdf) 점검 및 자동 설치
 Write-Host "
-[3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf / uv / serena) 점검 중..." -ForegroundColor Yellow
+[3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf / uv / serena / WSL / rtk) 점검 중..." -ForegroundColor Yellow
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 winget으로 자동 설치
 if (Get-Command git -ErrorAction SilentlyContinue) {
@@ -258,6 +258,41 @@ if (Get-Command serena -ErrorAction SilentlyContinue) {
     Write-Host "  · uv가 없어 serena 설치를 건너뜁니다." -ForegroundColor Gray
 }
 
+# WSL: rtk 등 Linux 전용 도구 실행용 Windows Subsystem for Linux
+# 'wsl -l -q' 가 비어있지 않으면 distro 설치된 상태. 없으면 'wsl --install --no-launch'로 자동 설치.
+# 첫 설치는 관리자 권한 필요 + 재부팅 후 Ubuntu 초기 설정(사용자명/비밀번호) 필요.
+$wslInstalled = $false
+if (Get-Command wsl -ErrorAction SilentlyContinue) {
+    $wslDistros = (wsl -l -q 2>$null) -join "" -replace "`0",""
+    if ($wslDistros.Trim()) {
+        Write-Host "  ✓ WSL 확인됨 (설치된 distro: $($wslDistros.Trim() -split "`r?`n" -join ', '))" -ForegroundColor Green
+        $wslInstalled = $true
+    }
+}
+if (-not $wslInstalled) {
+    if ($isAdmin) {
+        Write-Host "  · WSL 미설치. 'wsl --install --no-launch' 로 자동 설치를 시도합니다... (재부팅 필요)" -ForegroundColor Gray
+        wsl --install --no-launch 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  ✓ WSL 설치 명령 실행 완료. 재부팅 후 Ubuntu 초기 설정(사용자명/비밀번호)을 마쳐야 합니다." -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ WSL 자동 설치 실패. 수동: 관리자 PowerShell에서 'wsl --install'"
+        }
+    } else {
+        Write-Warning "  ✗ WSL 미설치. 자동 설치는 관리자 권한이 필요합니다."
+        Write-Host "    수동: 관리자 PowerShell에서 'wsl --install' 실행 후 재부팅" -ForegroundColor Cyan
+    }
+}
+
+# rtk: AI CLI Bash 출력 압축 도구 (Windows 네이티브 미지원 — WSL 안에서 설치 권장)
+if (Get-Command rtk -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ rtk 확인됨" -ForegroundColor Green
+} else {
+    Write-Host "  · rtk 미설치. Windows 네이티브 자동 설치는 미지원입니다." -ForegroundColor Gray
+    Write-Host "    WSL(권장):  wsl -- bash -c 'curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh'" -ForegroundColor Cyan
+    Write-Host "    네이티브:   https://github.com/rtk-ai/rtk/releases (rtk-x86_64-pc-windows-msvc.zip)" -ForegroundColor Cyan
+}
+
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
 Write-Host "
 [4/8] 인공지능 / 개발 CLI 도구 설치 및 업데이트 중 (잠시만 기다려 주세요)..." -ForegroundColor Yellow
@@ -273,7 +308,8 @@ $NPM_GLOBALS = @(
     "@playwright/test@latest",            # 웹 자동화·브라우저 테스트
     "xlsx@latest",                        # 엑셀(.xlsx) 파일 처리 라이브러리
     "typescript@latest",                  # TypeScript 컴파일러 (tsc)
-    "tsx@latest"                          # TypeScript 즉시 실행 도구 (tsx)
+    "tsx@latest",                         # TypeScript 즉시 실행 도구 (tsx)
+    "@musistudio/claude-code-router@latest"  # Claude Code Router (ccr) — Claude/모델 라우팅
 )
 
 foreach ($pkg in $NPM_GLOBALS) {
@@ -340,8 +376,8 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 # pbakaus/impeccable: 디자인 보조 스킬 모음 (frontend-design, polish, delight, animate, audit 등)
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 Write-Host "
-[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers) 설치 중..." -ForegroundColor Yellow
-Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화)" -ForegroundColor Gray
+[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman) 설치 중..." -ForegroundColor Yellow
+Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축)" -ForegroundColor Gray
 
 npx --yes skills add pbakaus/impeccable
 if ($?) { Write-Host "  ✓ impeccable 스킬 설치 완료" -ForegroundColor Green }
@@ -379,6 +415,17 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
     Install-ClaudePlugin "superpowers"
 } else {
     Write-Warning "  claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다."
+}
+
+# caveman: 다중 AI 에이전트(Claude/Codex/Gemini 등) 출력 압축 스킬 (~75% 토큰 절감)
+# 공식 설치 스크립트는 자체 멱등성 보장 ("Safe to re-run") — 매번 실행해도 안전
+Write-Host "  > caveman 스킬 설치/업데이트 중... (juliusbrussee/caveman)"
+try {
+    Invoke-RestMethod https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.ps1 | Invoke-Expression
+    Write-Host "  ✓ caveman 스킬 설치 완료" -ForegroundColor Green
+} catch {
+    Write-Warning "  ✗ caveman 설치 실패: $($_.Exception.Message)"
+    Write-Host "    수동: irm https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.ps1 | iex" -ForegroundColor Cyan
 }
 
 # 8. PowerShell 7 프로필에 PSReadLine 자동완성 키 등록

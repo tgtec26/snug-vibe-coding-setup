@@ -250,6 +250,7 @@ NPM_GLOBALS=(
   "xlsx@latest"                        # 엑셀(.xlsx) 파일 처리 라이브러리
   "typescript@latest"                  # TypeScript 컴파일러 (tsc)
   "tsx@latest"                         # TypeScript 즉시 실행 도구 (tsx)
+  "@musistudio/claude-code-router@latest"  # Claude Code Router (ccr) — Claude/모델 라우팅
 )
 
 for pkg in "${NPM_GLOBALS[@]}"; do
@@ -314,8 +315,8 @@ fi
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 # ============================================================
 echo ""
-echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers) 설치 중...${NC}"
-echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화)${NC}"
+echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman) 설치 중...${NC}"
+echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축)${NC}"
 
 if npx --yes skills add pbakaus/impeccable; then
   echo "  ${GREEN}✓ impeccable 스킬 설치 완료${NC}"
@@ -358,6 +359,15 @@ if command -v claude &>/dev/null; then
   install_claude_plugin "superpowers"
 else
   echo "  ${YELLOW}claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다.${NC}"
+fi
+
+# caveman: 다중 AI 에이전트(Claude/Codex/Gemini 등) 출력 압축 스킬 (~75% 토큰 절감)
+# 공식 설치 스크립트는 자체 멱등성 보장 ("Safe to re-run") — 매번 실행해도 안전
+echo "  > caveman 스킬 설치/업데이트 중... (juliusbrussee/caveman)"
+if curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash; then
+  echo "  ${GREEN}✓ caveman 스킬 설치 완료${NC}"
+else
+  echo "  ${YELLOW}✗ caveman 설치 실패. 수동: curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash${NC}"
 fi
 
 # ============================================================
