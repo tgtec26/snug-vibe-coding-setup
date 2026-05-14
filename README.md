@@ -7,7 +7,7 @@
 ## 빠른 설치
 
 ### Windows
-PowerShell을 **관리자 권한으로 실행** 후 아래 한 줄 입력:
+**일반 PowerShell**(관리자 권한 불필요)을 실행한 후 아래 한 줄 입력:
 
 ```powershell
 irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
@@ -122,7 +122,7 @@ Terminal
 PowerShell이 아닌 일반 cmd 창에서 실행한 경우입니다. 시작 메뉴 → "PowerShell" 검색 후 다시 시도하세요.
 
 ### "이 시스템에서 스크립트를 실행할 수 없으므로..." (Windows)
-`bootstrap.ps1`은 내부적으로 `setup.bat`을 통해 `-ExecutionPolicy Bypass`로 실행되므로 정상 흐름에서는 발생하지 않습니다. 만약 발생하면 PowerShell을 **관리자 권한**으로 다시 실행하세요.
+`bootstrap.ps1`은 내부적으로 `setup.bat`을 통해 `-ExecutionPolicy Bypass`로 실행되므로 정상 흐름에서는 발생하지 않습니다. 만약 발생하면 새 PowerShell 창에서 한 줄 명령어로 다시 실행하세요.
 
 ### Mac에서 `\r: command not found` 오류
 `setup.sh`가 CRLF 줄바꿈으로 저장된 경우입니다. 본 저장소는 `.gitattributes`로 LF를 강제하므로 정상 다운로드 시 발생하지 않습니다. 발생 시:
@@ -135,8 +135,8 @@ sed -i '' 's/\r$//' setup.sh && bash setup.sh
 - 한 줄 명령어로 실행한 경우: 자동으로 `chcp 65001`이 호출되므로 정상.
 - `setup.ps1`만 직접 실행한 경우 발생 가능 → 항상 `setup.bat`(또는 한 줄 명령어)으로 시작하세요.
 
-### 권한 부족으로 일부 npm 패키지 설치 실패
-- **Windows**: PowerShell을 **관리자 권한**으로 다시 실행
+### 권한 부족으로 일부 패키지 설치 실패
+- **Windows**: 새 PowerShell 창에서 한 줄 명령어로 다시 실행. winget이 UAC 프롬프트를 띄우면 "예"를 선택하세요. (관리자 권한으로 실행하면 scoop 설치가 우회 모드로 동작하므로 권장하지 않습니다.)
 - **macOS**: 실패한 패키지를 `sudo npm install -g <패키지명>`로 개별 재시도
 
 ---

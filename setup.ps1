@@ -26,12 +26,14 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
-# === 관리자 권한 체크 ===
-# winget 일부 패키지(Node.js, Git 등)는 관리자 권한이 필요할 수 있다.
+# === 권한 체크 ===
+# 일반(비관리자) PowerShell 실행을 권장한다. winget의 머신 전역 패키지는 필요 시
+# UAC 프롬프트로 처리되고, scoop은 사용자 프로파일에 정상 설치된다. 관리자 세션에서는
+# scoop이 -RunAsAdmin 우회 모드로 설치되므로 권장하지 않는다.
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $isAdmin) {
-    Write-Warning "관리자 권한으로 실행되지 않았습니다. winget 일부 설치가 실패할 수 있습니다."
-    Write-Host "  → 설치 실패 시 PowerShell 7을 '관리자 권한으로 실행' 후 재시도해 주세요." -ForegroundColor Cyan
+if ($isAdmin) {
+    Write-Warning "관리자 권한 세션에서 실행 중입니다. 일반 PowerShell 실행을 권장합니다."
+    Write-Host "  → scoop은 일반 권한에서 정상 설치되고, winget은 필요 시 UAC 프롬프트로 처리됩니다." -ForegroundColor Cyan
 }
 
 # === PATH 환경변수 새로고침 + 콘솔 VT 모드 복원 헬퍼 ===
