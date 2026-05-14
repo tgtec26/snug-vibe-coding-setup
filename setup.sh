@@ -269,7 +269,7 @@ done
 echo ""
 echo "${YELLOW}[5/8] Playwright 브라우저(Chromium) 설치 중...${NC}"
 echo "  ${GRAY}(웹 자동화/스크린샷에 사용. 약 150MB 다운로드)${NC}"
-if npx --yes playwright install chromium; then
+if npx --yes playwright install chromium </dev/null; then
   echo "  ${GREEN}✓ Playwright 브라우저 설치 완료${NC}"
 else
   echo "  ${YELLOW}✗ Playwright 브라우저 설치 중 오류가 발생했습니다.${NC}"
@@ -318,7 +318,7 @@ echo ""
 echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman) 설치 중...${NC}"
 echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축)${NC}"
 
-if npx --yes skills add pbakaus/impeccable; then
+if npx --yes skills add pbakaus/impeccable </dev/null; then
   echo "  ${GREEN}✓ impeccable 스킬 설치 완료${NC}"
 else
   echo "  ${YELLOW}✗ impeccable 스킬 설치 실패 (Claude Code 로그인 후 재시도)${NC}"
@@ -328,7 +328,7 @@ SKILL_ROOT="$HOME/.claude/skills"
 if [[ -d "$SKILL_ROOT/senior-frontend" ]]; then
   echo "  ${GRAY}· senior-frontend 스킬 이미 존재${NC}"
 else
-  if npx -y claude-code-templates@latest --skill development/senior-frontend; then
+  if npx -y claude-code-templates@latest --skill development/senior-frontend </dev/null; then
     echo "  ${GREEN}✓ senior-frontend 스킬 설치 완료${NC}"
   else
     echo "  ${YELLOW}✗ senior-frontend 스킬 설치 실패${NC}"
