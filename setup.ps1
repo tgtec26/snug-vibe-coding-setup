@@ -417,15 +417,20 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
     Write-Warning "  claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다."
 }
 
-# caveman: 다중 AI 에이전트(Claude/Codex/Gemini 등) 출력 압축 스킬 (~75% 토큰 절감)
-# 공식 설치 스크립트는 자체 멱등성 보장 ("Safe to re-run") — 매번 실행해도 안전
-Write-Host "  > caveman 스킬 설치/업데이트 중... (juliusbrussee/caveman)"
-try {
-    Invoke-RestMethod https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.ps1 | Invoke-Expression
-    Write-Host "  ✓ caveman 스킬 설치 완료" -ForegroundColor Green
-} catch {
-    Write-Warning "  ✗ caveman 설치 실패: $($_.Exception.Message)"
-    Write-Host "    수동: irm https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.ps1 | iex" -ForegroundColor Cyan
+# caveman: Claude Code 플러그인으로 설치 (출력 압축 ~75% 토큰 절감)
+# irm|iex(non-TTY) 환경에서는 caveman 공식 install.ps1이 claude plugin install을 건너뛰므로
+# 직접 claude plugin 명령어로 설치한다.
+Write-Host "  > caveman 플러그인 설치 중... (JuliusBrussee/caveman)"
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    claude plugin marketplace add JuliusBrussee/caveman 2>$null
+    try {
+        claude plugin install caveman@caveman
+        Write-Host "  ✓ caveman 플러그인 설치 완료" -ForegroundColor Green
+    } catch {
+        Write-Warning "  ✗ caveman 설치 실패. 수동: claude plugin marketplace add JuliusBrussee/caveman; claude plugin install caveman@caveman"
+    }
+} else {
+    Write-Host "  claude 명령을 찾을 수 없어 caveman 설치를 건너뜁니다." -ForegroundColor Yellow
 }
 
 # 8. PowerShell 7 프로필에 PSReadLine 자동완성 키 등록

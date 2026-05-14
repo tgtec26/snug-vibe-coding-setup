@@ -361,13 +361,19 @@ else
   echo "  ${YELLOW}claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다.${NC}"
 fi
 
-# caveman: 다중 AI 에이전트(Claude/Codex/Gemini 등) 출력 압축 스킬 (~75% 토큰 절감)
-# 공식 설치 스크립트는 자체 멱등성 보장 ("Safe to re-run") — 매번 실행해도 안전
-echo "  > caveman 스킬 설치/업데이트 중... (juliusbrussee/caveman)"
-if curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash; then
-  echo "  ${GREEN}✓ caveman 스킬 설치 완료${NC}"
+# caveman: Claude Code 플러그인으로 설치 (출력 압축 ~75% 토큰 절감)
+# curl|bash(non-TTY) 환경에서는 caveman 공식 install.sh가 claude plugin install을 건너뛰므로
+# 직접 claude plugin 명령어로 설치한다.
+echo "  > caveman 플러그인 설치 중... (JuliusBrussee/caveman)"
+if command -v claude &>/dev/null; then
+  claude plugin marketplace add JuliusBrussee/caveman 2>/dev/null || true
+  if claude plugin install caveman@caveman 2>/dev/null; then
+    echo "  ${GREEN}✓ caveman 플러그인 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ caveman 설치 실패. 수동: claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman${NC}"
+  fi
 else
-  echo "  ${YELLOW}✗ caveman 설치 실패. 수동: curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash${NC}"
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 caveman 설치를 건너뜁니다.${NC}"
 fi
 
 # ============================================================
