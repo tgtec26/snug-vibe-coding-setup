@@ -366,8 +366,8 @@ fi
 # 직접 claude plugin 명령어로 설치한다.
 echo "  > caveman 플러그인 설치 중... (JuliusBrussee/caveman)"
 if command -v claude &>/dev/null; then
-  claude plugin marketplace add JuliusBrussee/caveman 2>/dev/null || true
-  if claude plugin install caveman@caveman 2>/dev/null; then
+  claude plugin marketplace add JuliusBrussee/caveman 2>&1 || true
+  if claude plugin install caveman@caveman 2>&1; then
     echo "  ${GREEN}✓ caveman 플러그인 설치 완료${NC}"
   else
     echo "  ${YELLOW}✗ caveman 설치 실패. 수동: claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman${NC}"

@@ -422,7 +422,7 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 # 직접 claude plugin 명령어로 설치한다.
 Write-Host "  > caveman 플러그인 설치 중... (JuliusBrussee/caveman)"
 if (Get-Command claude -ErrorAction SilentlyContinue) {
-    claude plugin marketplace add JuliusBrussee/caveman 2>$null
+    claude plugin marketplace add JuliusBrussee/caveman
     try {
         claude plugin install caveman@caveman
         Write-Host "  ✓ caveman 플러그인 설치 완료" -ForegroundColor Green
