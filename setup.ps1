@@ -185,8 +185,17 @@ if (Get-Command pipx -ErrorAction SilentlyContinue) {
     # scoop이 없으면 먼저 설치
     if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
         Write-Host "  · scoop 미설치. pipx 설치를 위해 scoop을 먼저 설치합니다..." -ForegroundColor Gray
-        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-        Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+        # 그룹 정책으로 정책이 덮어쓰여 있으면 경고가 뜨지만 무해하므로 억제한다.
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        # scoop 설치 스크립트는 관리자 권한 세션에서 기본적으로 중단된다("Running the installer
+        # as administrator is disabled by default"). 관리자 세션이면 -RunAsAdmin 스위치를 넘겨 진행한다.
+        $scoopInstaller = Invoke-RestMethod -Uri https://get.scoop.sh
+        if ($isAdmin) {
+            Write-Host "    (관리자 권한 세션 감지 → scoop을 -RunAsAdmin 모드로 설치)" -ForegroundColor Gray
+            & ([scriptblock]::Create($scoopInstaller)) -RunAsAdmin
+        } else {
+            & ([scriptblock]::Create($scoopInstaller))
+        }
         Reload-Path
     }
     if (Get-Command scoop -ErrorAction SilentlyContinue) {
