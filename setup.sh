@@ -84,7 +84,7 @@ echo "  ${GREEN}✓ Node.js ${NODE_VER} 확인되었습니다.${NC}"
 # 3. 보조 도구(Git / 코드 에디터 / Python / gh / jq) 점검 및 자동 설치
 # ============================================================
 echo ""
-echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena / rtk) 점검 중...${NC}"
+echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena / rtk / agy / supabase) 점검 중...${NC}"
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 brew로 자동 설치
 if command -v git &>/dev/null; then
@@ -232,6 +232,32 @@ else
   fi
 fi
 
+# agy: Google Antigravity CLI — 기존 Gemini CLI의 후속(2026-06-18 Gemini CLI 종료).
+# Go 바이너리라 npm이 아닌 공식 install.sh로 설치한다. 명령어는 'agy', 첫 실행 시 Google 로그인.
+if command -v agy &>/dev/null; then
+  echo "  ${GREEN}✓ agy(Antigravity CLI) 확인됨${NC}"
+else
+  echo "  · agy(Antigravity CLI) 미설치. 공식 설치 스크립트로 설치를 시도합니다..."
+  if curl -fsSL https://antigravity.google/cli/install.sh | bash; then
+    echo "  ${GREEN}✓ agy 설치 완료 (새 터미널에서 'agy auth login' 으로 로그인)${NC}"
+  else
+    echo "  ${YELLOW}✗ agy 자동 설치 실패. 수동: curl -fsSL https://antigravity.google/cli/install.sh | bash${NC}"
+  fi
+fi
+
+# supabase: Supabase(오픈소스 Firebase 대안) CLI — DB·인증·Edge Functions 로컬 개발·배포.
+# npm 글로벌 설치는 미지원이므로 brew tap 으로 설치한다.
+if command -v supabase &>/dev/null; then
+  echo "  ${GREEN}✓ supabase CLI 확인됨 ($(supabase --version 2>/dev/null | head -n1))${NC}"
+else
+  echo "  · supabase CLI 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install supabase/tap/supabase; then
+    echo "  ${GREEN}✓ supabase CLI 설치 완료. 'supabase login' 으로 인증하세요.${NC}"
+  else
+    echo "  ${YELLOW}✗ supabase CLI 자동 설치 실패. 수동: brew install supabase/tap/supabase${NC}"
+  fi
+fi
+
 # ============================================================
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
 # ============================================================
@@ -239,7 +265,6 @@ echo ""
 echo "${YELLOW}[4/8] 인공지능 / 개발 CLI 도구 설치 및 업데이트 중 (잠시만 기다려 주세요)...${NC}"
 
 NPM_GLOBALS=(
-  "@google/gemini-cli@latest"          # Gemini AI CLI (gemini)
   "@anthropic-ai/claude-code@latest"   # Claude Code AI CLI (claude)
   "@googleworkspace/cli@latest"        # gws — Google Sheets/Drive 등 Workspace CLI
   "@google/clasp@latest"               # Google Apps Script 도구 (clasp)
@@ -302,9 +327,23 @@ if command -v claude &>/dev/null; then
   }
 
   add_mcp "playwright"           "npx @playwright/mcp@latest"                              "브라우저 자동화/스크린샷"
+  add_mcp "chrome-devtools"      "npx chrome-devtools-mcp@latest"                          "브라우저 디버깅/성능 분석"
   add_mcp "context7"             "npx -y @upstash/context7-mcp"                            "라이브러리 공식 문서 검색"
   add_mcp "sequential-thinking"  "npx -y @modelcontextprotocol/server-sequential-thinking" "단계적 사고 도구"
   add_mcp "serena"               "serena start-mcp-server --context claude-code --project-from-cwd" "코드베이스 시맨틱 분석"
+
+  # Vercel MCP: 원격(HTTP) 서버 — 배포 로그·상태 조회 (OAuth, 읽기 전용).
+  # add_mcp 헬퍼는 stdio(`-- 명령어`)용이라 HTTP transport는 별도로 처리한다.
+  if echo "$MCP_LIST" | grep -q -- "vercel"; then
+    echo "  ${GRAY}· MCP vercel : 이미 등록됨 (Vercel 배포 로그·상태 조회)${NC}"
+  else
+    echo "  > MCP vercel 등록 중... (Vercel 배포 로그·상태 조회 / 최초 1회 Claude에서 '/mcp'로 OAuth 인증 필요)"
+    if claude mcp add --transport http vercel https://mcp.vercel.com >/dev/null 2>&1; then
+      echo "    ${GREEN}✓ vercel 등록 완료 (Claude에서 '/mcp'로 인증하세요)${NC}"
+    else
+      echo "    ${YELLOW}✗ vercel 등록 실패${NC}"
+    fi
+  fi
 else
   echo "  ${YELLOW}claude 명령을 찾을 수 없어 MCP 등록을 건너뜁니다. (Claude Code 설치 후 재실행)${NC}"
 fi
@@ -315,8 +354,8 @@ fi
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 # ============================================================
 echo ""
-echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman) 설치 중...${NC}"
-echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축)${NC}"
+echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills) 설치 중...${NC}"
+echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성)${NC}"
 
 if npx --yes skills add pbakaus/impeccable </dev/null; then
   echo "  ${GREEN}✓ impeccable 스킬 설치 완료${NC}"
@@ -359,6 +398,20 @@ if command -v claude &>/dev/null; then
   install_claude_plugin "superpowers"
 else
   echo "  ${YELLOW}claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다.${NC}"
+fi
+
+# document-skills: Anthropic 공식 문서 처리 스킬 (pptx/docx/xlsx/pdf 생성·편집)
+# 별도 마켓플레이스(anthropics/skills)에서 설치 — 교사용 학습지·발표자료 제작에 활용
+echo "  > document-skills 플러그인 설치 중... (pptx/docx/xlsx/pdf 문서 생성·편집)"
+if command -v claude &>/dev/null; then
+  claude plugin marketplace add anthropics/skills 2>&1 || true
+  if claude plugin install document-skills@anthropic-agent-skills 2>&1; then
+    echo "  ${GREEN}✓ document-skills 플러그인 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ document-skills 설치 실패. 수동: claude plugin marketplace add anthropics/skills && claude plugin install document-skills@anthropic-agent-skills${NC}"
+  fi
+else
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 document-skills 설치를 건너뜁니다.${NC}"
 fi
 
 # caveman: Claude Code 플러그인으로 설치 (출력 압축 ~75% 토큰 절감)
@@ -459,14 +512,16 @@ echo "${GREEN} 🎉 모든 필수 도구 설치가 완료되었습니다!${NC}"
 echo "${GREEN}==========================================================${NC}"
 echo ""
 echo "[다음 단계 안내]"
-echo "1. 'gemini' 또는 'claude' 명령어로 AI 대화를 시작하세요."
+echo "1. 'agy' 또는 'claude' 명령어로 AI 대화를 시작하세요."
 echo "   (또는 'cc' — claude 권한 스킵 모드 단축키)"
+echo "   ${CYAN}agy(Antigravity CLI)는 기존 gemini CLI의 후속입니다. 첫 실행: 'agy auth login'${NC}"
 echo "2. 'gws login' / 'clasp login' 으로 구글 워크스페이스 인증을 완료하세요."
-echo "3. 'firebase login' 으로 Firebase 인증을 완료하세요. (Firebase 사용 시)"
+echo "3. 'firebase login' / 'supabase login' 으로 백엔드(Firebase·Supabase) 인증을 완료하세요. (사용 시)"
 echo "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장소 사용 시)"
 echo "5. 새 터미널 창을 열어야 alias cc / 자동완성 설정이 적용됩니다."
 echo "   ${CYAN}또는 즉시 적용: source $SHELL_RC${NC}"
 echo "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-echo "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/context7/sequential-thinking/serena) 동작을 확인하세요."
+echo "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel) 동작을 확인하세요."
+echo "   ${CYAN}(vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)${NC}"
 echo "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
 echo ""

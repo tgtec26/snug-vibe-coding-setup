@@ -91,7 +91,7 @@ Write-Host "  ✓ Node.js $nodeVer 확인되었습니다." -ForegroundColor Gree
 
 # 3. 보조 도구(Git, 코드 에디터, Python, gh, OpenJDK, pipx, opendataloader-pdf) 점검 및 자동 설치
 Write-Host "
-[3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf / uv / serena / WSL / rtk) 점검 중..." -ForegroundColor Yellow
+[3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf / uv / serena / WSL / rtk / agy / supabase) 점검 중..." -ForegroundColor Yellow
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 winget으로 자동 설치
 if (Get-Command git -ErrorAction SilentlyContinue) {
@@ -304,13 +304,50 @@ if (Get-Command rtk -ErrorAction SilentlyContinue) {
     Write-Host "    네이티브:   https://github.com/rtk-ai/rtk/releases (rtk-x86_64-pc-windows-msvc.zip)" -ForegroundColor Cyan
 }
 
+# agy: Google Antigravity CLI — 기존 Gemini CLI의 후속(2026-06-18 Gemini CLI 종료).
+# Go 바이너리라 npm이 아닌 공식 install.ps1로 설치한다. 명령어는 'agy', 첫 실행 시 Google 로그인.
+if (Get-Command agy -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ agy(Antigravity CLI) 확인됨" -ForegroundColor Green
+} else {
+    Write-Host "  · agy(Antigravity CLI) 미설치. 공식 설치 스크립트로 설치를 시도합니다..." -ForegroundColor Gray
+    try {
+        Invoke-RestMethod -Uri https://antigravity.google/cli/install.ps1 | Invoke-Expression
+        Reload-Path
+        if (Get-Command agy -ErrorAction SilentlyContinue) {
+            Write-Host "  ✓ agy 설치 완료 (새 터미널에서 'agy auth login' 으로 로그인)" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ agy 설치가 즉시 반영되지 않았습니다. 새 터미널에서 'agy' 동작 여부를 확인해 주세요."
+        }
+    } catch {
+        Write-Warning "  ✗ agy 자동 설치 실패. 수동: irm https://antigravity.google/cli/install.ps1 | iex"
+    }
+}
+
+# supabase: Supabase(오픈소스 Firebase 대안) CLI — DB·인증·Edge Functions 로컬 개발·배포.
+# npm 글로벌 설치는 미지원이므로 scoop bucket 으로 설치한다.
+if (Get-Command supabase -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ supabase CLI 확인됨" -ForegroundColor Green
+} elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+    Write-Host "  · supabase CLI 미설치. scoop으로 설치를 시도합니다..." -ForegroundColor Gray
+    scoop bucket add supabase https://github.com/supabase/scoop-bucket.git 2>&1 | Out-Null
+    scoop install supabase 2>&1 | Out-Null
+    Reload-Path
+    if (Get-Command supabase -ErrorAction SilentlyContinue) {
+        Write-Host "  ✓ supabase CLI 설치 완료. 'supabase login' 으로 인증하세요." -ForegroundColor Green
+    } else {
+        Write-Warning "  ✗ supabase CLI 설치 실패. 수동: scoop bucket add supabase https://github.com/supabase/scoop-bucket.git; scoop install supabase"
+    }
+} else {
+    Write-Warning "  ✗ scoop이 없어 supabase CLI 설치를 건너뜁니다."
+    Write-Host "    수동: scoop bucket add supabase https://github.com/supabase/scoop-bucket.git; scoop install supabase" -ForegroundColor Cyan
+}
+
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
 Write-Host "
 [4/8] 인공지능 / 개발 CLI 도구 설치 및 업데이트 중 (잠시만 기다려 주세요)..." -ForegroundColor Yellow
 
 # 일반 npm 글로벌 패키지 (postinstall에서 Expand-Archive를 호출하지 않는 패키지들)
 $NPM_GLOBALS = @(
-    "@google/gemini-cli@latest",          # Gemini AI CLI (gemini)
     "@anthropic-ai/claude-code@latest",   # Claude Code AI CLI (claude)
     "@google/clasp@latest",               # Google Apps Script 도구 (clasp)
     "firebase-tools@latest",              # Firebase 인증·Firestore·배포 (firebase)
@@ -376,9 +413,24 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
         }
     }
     Add-Mcp "playwright"           "npx @playwright/mcp@latest"                                     "브라우저 자동화/스크린샷"
+    Add-Mcp "chrome-devtools"      "npx chrome-devtools-mcp@latest"                                 "브라우저 디버깅/성능 분석"
     Add-Mcp "context7"             "npx -y @upstash/context7-mcp"                                   "라이브러리 공식 문서 검색"
     Add-Mcp "sequential-thinking"  "npx -y @modelcontextprotocol/server-sequential-thinking"        "단계적 사고 도구"
     Add-Mcp "serena"               "serena start-mcp-server --context claude-code --project-from-cwd" "코드베이스 시맨틱 분석"
+
+    # Vercel MCP: 원격(HTTP) 서버 — 배포 로그·상태 조회 (OAuth, 읽기 전용).
+    # Add-Mcp 헬퍼는 stdio(`-- 명령어`)용이라 HTTP transport는 별도로 처리한다.
+    if ($mcpList -match "vercel") {
+        Write-Host "  · MCP vercel : 이미 등록됨 (Vercel 배포 로그·상태 조회)" -ForegroundColor Gray
+    } else {
+        Write-Host "  > MCP vercel 등록 중... (Vercel 배포 로그·상태 조회 / 최초 1회 Claude에서 '/mcp'로 OAuth 인증 필요)"
+        claude mcp add --transport http vercel https://mcp.vercel.com 2>&1 | Out-Null
+        if ($?) {
+            Write-Host "    ✓ vercel 등록 완료 (Claude에서 '/mcp'로 인증하세요)" -ForegroundColor Green
+        } else {
+            Write-Warning "    ✗ vercel 등록 실패"
+        }
+    }
 } else {
     Write-Warning "  claude 명령을 찾을 수 없어 MCP 등록을 건너뜁니다. (Claude Code 설치 후 재실행)"
 }
@@ -387,8 +439,8 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 # pbakaus/impeccable: 디자인 보조 스킬 모음 (frontend-design, polish, delight, animate, audit 등)
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 Write-Host "
-[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman) 설치 중..." -ForegroundColor Yellow
-Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축)" -ForegroundColor Gray
+[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills) 설치 중..." -ForegroundColor Yellow
+Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성)" -ForegroundColor Gray
 
 npx --yes skills add pbakaus/impeccable
 if ($?) { Write-Host "  ✓ impeccable 스킬 설치 완료" -ForegroundColor Green }
@@ -426,6 +478,21 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
     Install-ClaudePlugin "superpowers"
 } else {
     Write-Warning "  claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다."
+}
+
+# document-skills: Anthropic 공식 문서 처리 스킬 (pptx/docx/xlsx/pdf 생성·편집)
+# 별도 마켓플레이스(anthropics/skills)에서 설치 — 교사용 학습지·발표자료 제작에 활용
+Write-Host "  > document-skills 플러그인 설치 중... (pptx/docx/xlsx/pdf 문서 생성·편집)"
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    claude plugin marketplace add anthropics/skills
+    try {
+        claude plugin install document-skills@anthropic-agent-skills
+        Write-Host "  ✓ document-skills 플러그인 설치 완료" -ForegroundColor Green
+    } catch {
+        Write-Warning "  ✗ document-skills 설치 실패. 수동: claude plugin marketplace add anthropics/skills; claude plugin install document-skills@anthropic-agent-skills"
+    }
+} else {
+    Write-Host "  claude 명령을 찾을 수 없어 document-skills 설치를 건너뜁니다." -ForegroundColor Yellow
 }
 
 # caveman: Claude Code 플러그인으로 설치 (출력 압축 ~75% 토큰 절감)
@@ -493,13 +560,14 @@ Write-Host " 🎉 모든 필수 도구 설치가 완료되었습니다!" -Foregr
 Write-Host "==========================================================" -ForegroundColor Green
 Write-Host "
 [다음 단계 안내]"
-Write-Host "1. 'gemini' 또는 'claude' 명령어로 AI 대화를 시작하세요."
+Write-Host "1. 'agy' 또는 'claude' 명령어로 AI 대화를 시작하세요. (agy는 기존 gemini CLI의 후속 — 첫 실행: 'agy auth login')"
 Write-Host "2. 'gws login' / 'clasp login' 으로 구글 워크스페이스 인증을 완료하세요."
-Write-Host "3. 'firebase login' 으로 Firebase 인증을 완료하세요. (Firebase 사용 시)"
+Write-Host "3. 'firebase login' / 'supabase login' 으로 백엔드(Firebase·Supabase) 인증을 완료하세요. (사용 시)"
 Write-Host "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장소 사용 시)"
 Write-Host "5. 새 PowerShell 7 창을 열어야 자동완성 키(Tab/→)가 적용됩니다."
 Write-Host "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-Write-Host "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/context7/sequential-thinking/serena) 동작을 확인하세요."
+Write-Host "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel) 동작을 확인하세요."
+Write-Host "   (vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)" -ForegroundColor Cyan
 Write-Host "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
 Write-Host "
 아무 키나 누르면 창이 닫힙니다..."

@@ -40,7 +40,6 @@ curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-set
 | 패키지 | 명령어 | 용도 |
 |---|---|---|
 | `@anthropic-ai/claude-code` | `claude` | Anthropic Claude AI CLI |
-| `@google/gemini-cli` | `gemini` | Google Gemini AI CLI |
 | `@googleworkspace/cli` | `gws` | Google Sheets/Drive 등 Workspace CLI |
 | `@google/clasp` | `clasp` | Google Apps Script 도구 |
 | `firebase-tools` | `firebase` | Firebase 인증·Firestore·배포 |
@@ -51,9 +50,11 @@ curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-set
 | `typescript` | `tsc` | TypeScript 컴파일러 |
 | `tsx` | `tsx` | TypeScript 즉시 실행 도구 |
 
+> **별도 설치 CLI(npm 아님)**: `agy`(Google Antigravity CLI — 기존 Gemini CLI 후속, 공식 install 스크립트로 설치), `supabase`(Supabase CLI — mac: brew tap / Windows: scoop). `gemini` CLI는 2026-06-18 종료 예정이라 `agy`로 교체되었습니다.
+
 ### 3. Claude Code 확장
-- **MCP 서버**: `playwright`(브라우저 자동화), `context7`(라이브러리 공식 문서 검색), `sequential-thinking`(단계적 사고)
-- **Skill**: `pbakaus/impeccable`(디자인 보조), `senior-frontend`(프론트엔드 코드 리뷰)
+- **MCP 서버**: `playwright`(브라우저 자동화), `chrome-devtools`(브라우저 디버깅·성능 분석), `context7`(라이브러리 공식 문서 검색), `sequential-thinking`(단계적 사고), `serena`(코드베이스 시맨틱 분석), `vercel`(배포 로그·상태 조회, 최초 1회 OAuth 인증 필요)
+- **Skill·플러그인**: `pbakaus/impeccable`(디자인 보조), `senior-frontend`(프론트엔드 코드 리뷰), `hookify`(AI 행동 hook 관리), `superpowers`(워크플로우 자동화), `caveman`(출력 압축), `document-skills`(pptx/docx/xlsx/pdf 문서 생성·편집)
 - **Playwright Chromium 브라우저** (약 150MB)
 
 ### 4. 셸 환경
