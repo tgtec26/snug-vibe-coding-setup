@@ -246,15 +246,40 @@ else
 fi
 
 # supabase: Supabase(오픈소스 Firebase 대안) CLI — DB·인증·Edge Functions 로컬 개발·배포.
-# npm 글로벌 설치는 미지원이므로 brew tap 으로 설치한다.
+# npm 글로벌 설치는 미지원. 1순위 brew tap, 실패 시(예: Command Line Tools 구버전으로 소스
+# 빌드 불가) 공식 prebuilt 바이너리를 GitHub 릴리스에서 직접 내려받아 설치한다.
 if command -v supabase &>/dev/null; then
   echo "  ${GREEN}✓ supabase CLI 확인됨 ($(supabase --version 2>/dev/null | head -n1))${NC}"
 else
   echo "  · supabase CLI 미설치. brew로 자동 설치를 시도합니다..."
-  if brew install supabase/tap/supabase; then
-    echo "  ${GREEN}✓ supabase CLI 설치 완료. 'supabase login' 으로 인증하세요.${NC}"
+  brew install supabase/tap/supabase 2>/dev/null
+  if command -v supabase &>/dev/null; then
+    echo "  ${GREEN}✓ supabase CLI 설치 완료 (brew). 'supabase login' 으로 인증하세요.${NC}"
   else
-    echo "  ${YELLOW}✗ supabase CLI 자동 설치 실패. 수동: brew install supabase/tap/supabase${NC}"
+    # brew 실패 → prebuilt 바이너리 직접 설치 (Command Line Tools 불필요)
+    echo "  ${GRAY}· brew 설치 실패 → GitHub 공식 바이너리로 재시도...${NC}"
+    case "$(uname -m)" in
+      arm64)  SB_ARCH="arm64" ;;
+      x86_64) SB_ARCH="amd64" ;;
+      *)      SB_ARCH="" ;;
+    esac
+    if [[ -z "$SB_ARCH" ]]; then
+      echo "  ${YELLOW}✗ 지원하지 않는 CPU 아키텍처($(uname -m)). 수동: https://github.com/supabase/cli/releases${NC}"
+    else
+      SB_BIN_DIR="$(brew --prefix 2>/dev/null)/bin"
+      [[ -d "$SB_BIN_DIR" && -w "$SB_BIN_DIR" ]] || SB_BIN_DIR="$HOME/.local/bin"
+      mkdir -p "$SB_BIN_DIR"
+      SB_TMP=$(mktemp -d)
+      if curl -fsSL "https://github.com/supabase/cli/releases/latest/download/supabase_darwin_${SB_ARCH}.tar.gz" -o "$SB_TMP/supabase.tar.gz" \
+         && tar -xzf "$SB_TMP/supabase.tar.gz" -C "$SB_TMP" supabase \
+         && mv -f "$SB_TMP/supabase" "$SB_BIN_DIR/supabase" \
+         && chmod +x "$SB_BIN_DIR/supabase"; then
+        echo "  ${GREEN}✓ supabase CLI 설치 완료 (바이너리 → $SB_BIN_DIR). 'supabase login' 으로 인증하세요.${NC}"
+      else
+        echo "  ${YELLOW}✗ supabase CLI 설치 실패. 수동: https://github.com/supabase/cli/releases 에서 supabase_darwin_${SB_ARCH}.tar.gz 다운로드${NC}"
+      fi
+      rm -rf "$SB_TMP"
+    fi
   fi
 fi
 
