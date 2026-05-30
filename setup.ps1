@@ -358,7 +358,8 @@ $NPM_GLOBALS = @(
     "typescript@latest",                  # TypeScript 컴파일러 (tsc)
     "tsx@latest",                         # TypeScript 즉시 실행 도구 (tsx)
     "@musistudio/claude-code-router@latest",  # Claude Code Router (ccr) — Claude/모델 라우팅
-    "repomix@latest"                      # Repomix — AI 친화적 코드베이스 패킹 도구
+    "repomix@latest",                     # Repomix — AI 친화적 코드베이스 패킹 도구
+    "@agentmemory/agentmemory@latest"     # agentmemory — 코딩 에이전트 영속 메모리(iii 엔진 자동설치)
 )
 
 foreach ($pkg in $NPM_GLOBALS) {
@@ -440,8 +441,8 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 # pbakaus/impeccable: 디자인 보조 스킬 모음 (frontend-design, polish, delight, animate, audit 등)
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 Write-Host "
-[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills) 설치 중..." -ForegroundColor Yellow
-Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성)" -ForegroundColor Gray
+[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / agentmemory) 설치 중..." -ForegroundColor Yellow
+Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성 + 영속 메모리)" -ForegroundColor Gray
 
 npx --yes skills add pbakaus/impeccable
 if ($?) { Write-Host "  ✓ impeccable 스킬 설치 완료" -ForegroundColor Green }
@@ -512,6 +513,29 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
     Write-Host "  claude 명령을 찾을 수 없어 caveman 설치를 건너뜁니다." -ForegroundColor Yellow
 }
 
+# agentmemory: 코딩 에이전트 영속 메모리 (세션 간 컨텍스트 기억)
+# - npm 패키지(@agentmemory/agentmemory)는 [4/8]에서 설치됨 → 'agentmemory connect' 로 MCP 연동
+# - 8개 스킬(/recall, /remember, /handoff 등)은 plugin 마켓플레이스(rohitg00/agentmemory)로 설치
+# - iii 엔진은 첫 실행 시 자동 설치(비대화형), Docker·API키 불필요. 엔진 자동기동은 [8/8] 프로필에서 처리.
+if ((Get-Command agentmemory -ErrorAction SilentlyContinue) -and (Get-Command claude -ErrorAction SilentlyContinue)) {
+    Write-Host "  > agentmemory Claude Code 연동 중... (영속 메모리)"
+    agentmemory connect claude-code 2>&1 | Out-Null
+    if ($?) {
+        Write-Host "    ✓ agentmemory MCP 연동 완료" -ForegroundColor Green
+    } else {
+        Write-Warning "    ✗ agentmemory 연동 실패. 수동: agentmemory connect claude-code"
+    }
+    claude plugin marketplace add rohitg00/agentmemory
+    try {
+        claude plugin install agentmemory@agentmemory
+        Write-Host "  ✓ agentmemory 스킬 플러그인 설치 완료" -ForegroundColor Green
+    } catch {
+        Write-Warning "  ✗ agentmemory 플러그인 설치 실패. 수동: claude plugin marketplace add rohitg00/agentmemory; claude plugin install agentmemory@agentmemory"
+    }
+} else {
+    Write-Warning "  agentmemory 또는 claude 명령을 찾을 수 없어 agentmemory 연동을 건너뜁니다."
+}
+
 # 8. PowerShell 7 프로필에 PSReadLine 자동완성 키 등록
 # Tab → AcceptSuggestion (인라인 회색 제안 즉시 수락)
 # RightArrow → TabCompleteNext (다음 후보로 이동)
@@ -555,6 +579,24 @@ function cc { claude --dangerously-skip-permissions @args }
     Write-Host "  · 'cc' 단축 명령 이미 등록됨" -ForegroundColor Gray
 }
 
+# agentmemory 엔진 자동기동: 영속 메모리는 iii 엔진(:3111) 상시 실행이 필요.
+# 새 PowerShell 창을 열 때 엔진이 안 떠 있으면 숨김 창으로 백그라운드 시작.
+if ($profileContent -notmatch "agentmemory 엔진") {
+    $amBlock = @"
+
+# === [setup_distribution] agentmemory 엔진 자동기동 (영속 메모리) ===
+if (Get-Command agentmemory -ErrorAction SilentlyContinue) {
+    `$amUp = `$false
+    try { Invoke-RestMethod -Uri http://localhost:3111/agentmemory/livez -TimeoutSec 1 -ErrorAction Stop | Out-Null; `$amUp = `$true } catch {}
+    if (-not `$amUp) { Start-Process -WindowStyle Hidden -FilePath "agentmemory" -ErrorAction SilentlyContinue }
+}
+"@
+    Add-Content -Path $profilePath -Value $amBlock -Encoding utf8
+    Write-Host "  ✓ agentmemory 엔진 자동기동 등록됨" -ForegroundColor Green
+} else {
+    Write-Host "  · agentmemory 엔진 자동기동 이미 등록됨" -ForegroundColor Gray
+}
+
 Write-Host "
 ==========================================================" -ForegroundColor Green
 Write-Host " 🎉 모든 필수 도구 설치가 완료되었습니다!" -ForegroundColor Green
@@ -567,8 +609,9 @@ Write-Host "3. 'firebase login' / 'supabase login' 으로 백엔드(Firebase·Su
 Write-Host "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장소 사용 시)"
 Write-Host "5. 새 PowerShell 7 창을 열어야 자동완성 키(Tab/→)가 적용됩니다."
 Write-Host "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-Write-Host "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel) 동작을 확인하세요."
+Write-Host "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel/agentmemory) 동작을 확인하세요."
 Write-Host "   (vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)" -ForegroundColor Cyan
+Write-Host "   (agentmemory 영속 메모리: 새 PowerShell 창을 열면 엔진이 자동 기동됩니다. 'agentmemory status'로 확인)" -ForegroundColor Cyan
 Write-Host "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
 Write-Host "
 아무 키나 누르면 창이 닫힙니다..."

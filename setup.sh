@@ -302,6 +302,7 @@ NPM_GLOBALS=(
   "tsx@latest"                         # TypeScript 즉시 실행 도구 (tsx)
   "@musistudio/claude-code-router@latest"  # Claude Code Router (ccr) — Claude/모델 라우팅
   "repomix@latest"                     # Repomix — AI 친화적 코드베이스 패킹 도구
+  "@agentmemory/agentmemory@latest"    # agentmemory — 코딩 에이전트 영속 메모리(iii 엔진 자동설치)
 )
 
 for pkg in "${NPM_GLOBALS[@]}"; do
@@ -380,8 +381,8 @@ fi
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 # ============================================================
 echo ""
-echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills) 설치 중...${NC}"
-echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성)${NC}"
+echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / agentmemory) 설치 중...${NC}"
+echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성 + 영속 메모리)${NC}"
 
 if npx --yes skills add pbakaus/impeccable </dev/null; then
   echo "  ${GREEN}✓ impeccable 스킬 설치 완료${NC}"
@@ -455,6 +456,25 @@ else
   echo "  ${YELLOW}claude 명령을 찾을 수 없어 caveman 설치를 건너뜁니다.${NC}"
 fi
 
+# agentmemory: 코딩 에이전트 영속 메모리 (세션 간 컨텍스트 기억)
+# - npm 패키지(@agentmemory/agentmemory)는 [4/8]에서 설치됨 → 'agentmemory connect' 로 MCP 연동
+# - 8개 스킬(/recall, /remember, /handoff 등)은 plugin 마켓플레이스(rohitg00/agentmemory)로 설치
+# - iii 엔진은 첫 실행 시 자동 설치(비대화형), Docker·API키 불필요. 엔진 자동기동은 [8/8] rc에서 처리.
+if command -v agentmemory &>/dev/null && command -v claude &>/dev/null; then
+  echo "  > agentmemory Claude Code 연동 중... (영속 메모리)"
+  agentmemory connect claude-code >/dev/null 2>&1 \
+    && echo "    ${GREEN}✓ agentmemory MCP 연동 완료${NC}" \
+    || echo "    ${YELLOW}✗ agentmemory 연동 실패. 수동: agentmemory connect claude-code${NC}"
+  claude plugin marketplace add rohitg00/agentmemory 2>&1 || true
+  if claude plugin install agentmemory@agentmemory 2>&1; then
+    echo "  ${GREEN}✓ agentmemory 스킬 플러그인 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ agentmemory 플러그인 설치 실패. 수동: claude plugin marketplace add rohitg00/agentmemory && claude plugin install agentmemory@agentmemory${NC}"
+  fi
+else
+  echo "  ${YELLOW}agentmemory 또는 claude 명령을 찾을 수 없어 agentmemory 연동을 건너뜁니다.${NC}"
+fi
+
 # ============================================================
 # 8. macOS 셸 환경 설정 (zsh 자동완성 + cc 별칭 + Karabiner 안내)
 #    - PowerShell 7의 PSReadLine 키 바인딩에 해당하는 macOS 측 설정
@@ -477,6 +497,21 @@ else
     echo "alias cc='claude --dangerously-skip-permissions'"
   } >> "$SHELL_RC"
   echo "  ${GREEN}✓ alias cc 등록됨 ($SHELL_RC)${NC}"
+fi
+
+# (1-1) agentmemory 엔진 자동기동: 영속 메모리는 iii 엔진(:3111) 상시 실행이 필요.
+# 터미널 열 때 엔진이 안 떠 있으면 백그라운드로 시작한다(비차단 — 셸 시작 지연 없음).
+if grep -q "setup.sh] agentmemory 엔진" "$SHELL_RC" 2>/dev/null; then
+  echo "  ${GRAY}· agentmemory 엔진 자동기동 이미 등록됨${NC}"
+else
+  {
+    echo ""
+    echo "# === [setup.sh] agentmemory 엔진 자동기동 (영속 메모리, 비차단) ==="
+    echo 'if command -v agentmemory >/dev/null 2>&1; then'
+    echo '  ( (curl -fsS -m1 http://localhost:3111/agentmemory/livez >/dev/null 2>&1 || agentmemory >/dev/null 2>&1) & ) 2>/dev/null'
+    echo 'fi'
+  } >> "$SHELL_RC"
+  echo "  ${GREEN}✓ agentmemory 엔진 자동기동 등록됨${NC}"
 fi
 
 # (1-2) OpenJDK PATH 영구 등록 (keg-only 이므로 brew가 자동으로 PATH에 넣지 않음)
@@ -547,7 +582,8 @@ echo "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장
 echo "5. 새 터미널 창을 열어야 alias cc / 자동완성 설정이 적용됩니다."
 echo "   ${CYAN}또는 즉시 적용: source $SHELL_RC${NC}"
 echo "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-echo "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel) 동작을 확인하세요."
+echo "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel/agentmemory) 동작을 확인하세요."
 echo "   ${CYAN}(vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)${NC}"
+echo "   ${CYAN}(agentmemory 영속 메모리: 새 터미널을 열면 엔진이 자동 기동됩니다. 'agentmemory status'로 확인)${NC}"
 echo "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
 echo ""
