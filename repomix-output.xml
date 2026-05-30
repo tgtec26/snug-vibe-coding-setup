@@ -1,0 +1,1641 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.claude/
+  settings.local.json
+.serena/
+  .gitignore
+  project.yml
+.gitattributes
+bootstrap.ps1
+README.md
+setup.bat
+setup.ps1
+setup.sh
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".claude/settings.local.json">
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk git *)"
+    ]
+  }
+}
+</file>
+
+<file path=".serena/.gitignore">
+/cache
+/project.local.yml
+</file>
+
+<file path=".serena/project.yml">
+# the name by which the project can be referenced within Serena
+project_name: "snug-vibe-coding-setup"
+
+
+# list of languages for which language servers are started; choose from:
+#   al                  bash                clojure             cpp                 csharp
+#   csharp_omnisharp    dart                elixir              elm                 erlang
+#   fortran             fsharp              go                  groovy              haskell
+#   haxe                java                julia               kotlin              lua
+#   markdown
+#   matlab              nix                 pascal              perl                php
+#   php_phpactor        powershell          python              python_jedi         r
+#   rego                ruby                ruby_solargraph     rust                scala
+#   swift               terraform           toml                typescript          typescript_vts
+#   vue                 yaml                zig
+#   (This list may be outdated. For the current list, see values of Language enum here:
+#   https://github.com/oraios/serena/blob/main/src/solidlsp/ls_config.py
+#   For some languages, there are alternative language servers, e.g. csharp_omnisharp, ruby_solargraph.)
+# Note:
+#   - For C, use cpp
+#   - For JavaScript, use typescript
+#   - For Free Pascal/Lazarus, use pascal
+# Special requirements:
+#   Some languages require additional setup/installations.
+#   See here for details: https://oraios.github.io/serena/01-about/020_programming-languages.html#language-servers
+# When using multiple languages, the first language server that supports a given file will be used for that file.
+# The first language is the default language and the respective language server will be used as a fallback.
+# Note that when using the JetBrains backend, language servers are not used and this list is correspondingly ignored.
+languages:
+- powershell
+
+# the encoding used by text files in the project
+# For a list of possible encodings, see https://docs.python.org/3.11/library/codecs.html#standard-encodings
+encoding: "utf-8"
+
+# line ending convention to use when writing source files.
+# Possible values: unset (use global setting), "lf", "crlf", or "native" (platform default)
+# This does not affect Serena's own files (e.g. memories and configuration files), which always use native line endings.
+line_ending:
+
+# The language backend to use for this project.
+# If not set, the global setting from serena_config.yml is used.
+# Valid values: LSP, JetBrains
+# Note: the backend is fixed at startup. If a project with a different backend
+# is activated post-init, an error will be returned.
+language_backend:
+
+# whether to use project's .gitignore files to ignore files
+ignore_all_files_in_gitignore: true
+
+# advanced configuration option allowing to configure language server-specific options.
+# Maps the language key to the options.
+# Have a look at the docstring of the constructors of the LS implementations within solidlsp (e.g., for C# or PHP) to see which options are available.
+# No documentation on options means no options are available.
+ls_specific_settings: {}
+
+# list of additional paths to ignore in this project.
+# Same syntax as gitignore, so you can use * and **.
+# Note: global ignored_paths from serena_config.yml are also applied additively.
+ignored_paths: []
+
+# whether the project is in read-only mode
+# If set to true, all editing tools will be disabled and attempts to use them will result in an error
+# Added on 2025-04-18
+read_only: false
+
+# list of tool names to exclude.
+# This extends the existing exclusions (e.g. from the global configuration)
+#
+# Below is the complete list of tools for convenience.
+# To make sure you have the latest list of tools, and to view their descriptions, 
+# execute `uv run scripts/print_tool_overview.py`.
+#
+#  * `activate_project`: Activates a project based on the project name or path.
+#  * `check_onboarding_performed`: Checks whether project onboarding was already performed.
+#  * `create_text_file`: Creates/overwrites a file in the project directory.
+#  * `delete_memory`: Delete a memory file. Should only happen if a user asks for it explicitly,
+#       for example by saying that the information retrieved from a memory file is no longer correct
+#       or no longer relevant for the project.
+#  * `edit_memory`: Replaces content matching a regular expression in a memory.
+#  * `execute_shell_command`: Executes a shell command.
+#  * `find_file`: Finds files in the given relative paths
+#  * `find_referencing_symbols`: Finds symbols that reference the given symbol using the language server backend
+#  * `find_symbol`: Performs a global (or local) search using the language server backend.
+#  * `get_current_config`: Prints the current configuration of the agent, including the active and available projects, tools, contexts, and modes.
+#  * `get_symbols_overview`: Gets an overview of the top-level symbols defined in a given file.
+#  * `initial_instructions`: Provides instructions Serena usage (i.e. the 'Serena Instructions Manual')
+#       for clients that do not read the initial instructions when the MCP server is connected.
+#  * `insert_after_symbol`: Inserts content after the end of the definition of a given symbol.
+#  * `insert_before_symbol`: Inserts content before the beginning of the definition of a given symbol.
+#  * `list_dir`: Lists files and directories in the given directory (optionally with recursion).
+#  * `list_memories`: List available memories. Any memory can be read using the `read_memory` tool.
+#  * `onboarding`: Performs onboarding (identifying the project structure and essential tasks, e.g. for testing or building).
+#  * `read_file`: Reads a file within the project directory.
+#  * `read_memory`: Read the content of a memory file. This tool should only be used if the information
+#       is relevant to the current task. You can infer whether the information
+#       is relevant from the memory file name.
+#       You should not read the same memory file multiple times in the same conversation.
+#  * `rename_memory`: Renames or moves a memory. Moving between project and global scope is supported
+#       (e.g., renaming "global/foo" to "bar" moves it from global to project scope).
+#  * `rename_symbol`: Renames a symbol throughout the codebase using language server refactoring capabilities.
+#       For JB, we use a separate tool.
+#  * `replace_content`: Replaces content in a file (optionally using regular expressions).
+#  * `replace_symbol_body`: Replaces the full definition of a symbol using the language server backend.
+#  * `safe_delete_symbol`:
+#  * `search_for_pattern`: Performs a search for a pattern in the project.
+#  * `write_memory`: Write some information (utf-8-encoded) about this project that can be useful for future tasks to a memory in md format.
+#       The memory name should be meaningful.
+excluded_tools: []
+
+# list of tools to include that would otherwise be disabled (particularly optional tools that are disabled by default).
+# This extends the existing inclusions (e.g. from the global configuration).
+included_optional_tools: []
+
+# fixed set of tools to use as the base tool set (if non-empty), replacing Serena's default set of tools.
+# This cannot be combined with non-empty excluded_tools or included_optional_tools.
+fixed_tools: []
+
+# list of mode names to that are always to be included in the set of active modes
+# The full set of modes to be activated is base_modes + default_modes.
+# If the setting is undefined, the base_modes from the global configuration (serena_config.yml) apply.
+# Otherwise, this setting overrides the global configuration.
+# Set this to [] to disable base modes for this project.
+# Set this to a list of mode names to always include the respective modes for this project.
+base_modes:
+
+# list of mode names that are to be activated by default.
+# The full set of modes to be activated is base_modes + default_modes.
+# If the setting is undefined, the default_modes from the global configuration (serena_config.yml) apply.
+# Otherwise, this overrides the setting from the global configuration (serena_config.yml).
+# This setting can, in turn, be overridden by CLI parameters (--mode).
+default_modes:
+
+# initial prompt for the project. It will always be given to the LLM upon activating the project
+# (contrary to the memories, which are loaded on demand).
+initial_prompt: ""
+
+# time budget (seconds) per tool call for the retrieval of additional symbol information
+# such as docstrings or parameter information.
+# This overrides the corresponding setting in the global configuration; see the documentation there.
+# If null or missing, use the setting from the global configuration.
+symbol_info_budget:
+
+# list of regex patterns which, when matched, mark a memory entry as read‑only.
+# Extends the list from the global configuration, merging the two lists.
+read_only_memory_patterns: []
+
+# list of regex patterns for memories to completely ignore.
+# Matching memories will not appear in list_memories or activate_project output
+# and cannot be accessed via read_memory or write_memory.
+# To access ignored memory files, use the read_file tool on the raw file path.
+# Extends the list from the global configuration, merging the two lists.
+# Example: ["_archive/.*", "_episodes/.*"]
+ignored_memory_patterns: []
+</file>
+
+<file path=".gitattributes">
+# macOS / Linux용 셸 스크립트는 LF 줄바꿈을 유지해야 한다.
+# Windows에서 git의 core.autocrlf=true 설정에 의해 CRLF로 변환되면
+# Mac/Linux의 bash가 첫 줄 shebang(#!/usr/bin/env bash)을 인식하지 못하거나,
+# 'r: command not found' 류 오류를 일으킨다.
+*.sh text eol=lf
+
+# Windows 전용 파일은 CRLF를 유지해도 무방하다.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+</file>
+
+<file path="bootstrap.ps1">
+# SNUG Online Office - Vibe Coding Setup Bootstrap
+# Purpose: short one-liner entry point invoked as `irm <url> | iex`.
+#
+# Why pure ASCII here:
+#   When this script runs in the user's current PowerShell session, the
+#   console codepage is typically CP949 (Korean Windows default). Writing
+#   Korean before chcp 65001 would render garbled text. setup.bat is the
+#   first thing that sets chcp 65001, after which all Korean output from
+#   setup.ps1 renders correctly. So this bootstrap stays English-only.
+
+$ErrorActionPreference = 'Stop'
+[Net.ServicePointManager]::SecurityProtocol = 'Tls12'
+
+$base = 'https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main'
+$dir  = Join-Path $env:TEMP 'snug-setup'
+New-Item -ItemType Directory -Path $dir -Force | Out-Null
+
+Write-Host '[bootstrap] Downloading setup.bat / setup.ps1 ...' -ForegroundColor Cyan
+Invoke-WebRequest -UseBasicParsing -Uri "$base/setup.bat" -OutFile (Join-Path $dir 'setup.bat')
+Invoke-WebRequest -UseBasicParsing -Uri "$base/setup.ps1" -OutFile (Join-Path $dir 'setup.ps1')
+
+Write-Host '[bootstrap] Launching setup.bat ...' -ForegroundColor Cyan
+& (Join-Path $dir 'setup.bat')
+</file>
+
+<file path="setup.bat">
+@echo off
+setlocal
+title SNUG Online Office - Setup Launcher
+
+REM ============================================================
+REM  SNUG Online Office - Vibe Coding Setup Launcher (.bat)
+REM  IMPORTANT: This file is intentionally pure ASCII (no Korean).
+REM  cmd.exe reads .bat files in OEM codepage; UTF-8 Korean would
+REM  corrupt commands. All Korean messages live in setup.ps1.
+REM ============================================================
+
+REM Set console to UTF-8 BEFORE launching pwsh, so pwsh inherits
+REM a UTF-8 console from the start (prevents Korean char doubling
+REM caused by mid-execution codepage switch).
+chcp 65001 >nul
+
+REM Switch to script's own folder so we can use a relative path
+REM (avoids passing the Korean path to PowerShell as an argument).
+cd /d "%~dp0"
+
+echo.
+echo ============================================================
+echo    SNUG Online Office - Setup Launcher
+echo ============================================================
+echo.
+
+if not exist "setup.ps1" (
+    echo  [ERROR] setup.ps1 not found in this folder.
+    echo          Make sure setup.bat and setup.ps1 are in the same folder.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo  Target script: %CD%\setup.ps1
+echo.
+
+REM === Choose available PowerShell (prefer 7) ===
+where pwsh >nul 2>nul
+if %ERRORLEVEL%==0 (
+    set "PS=pwsh"
+    echo  [OK] PowerShell 7 detected. Using pwsh.exe.
+) else (
+    set "PS=powershell"
+    echo  [INFO] PowerShell 7 not found. Falling back to Windows PowerShell 5.1.
+)
+echo.
+
+REM === 1) Remove MotW (Mark of the Web) added by Google Drive sync ===
+echo  [1/2] Unblocking script file...
+%PS% -NoProfile -Command "Unblock-File -Path '.\setup.ps1' -ErrorAction SilentlyContinue"
+
+REM === 2) Run installer with bypassed execution policy ===
+echo  [2/2] Running setup.ps1 ...
+echo.
+%PS% -NoProfile -ExecutionPolicy Bypass -File "setup.ps1"
+
+echo.
+echo ============================================================
+echo  Launcher finished. You can close this window.
+echo ============================================================
+pause
+endlocal
+</file>
+
+<file path="README.md">
+# SNUG 온라인 오피스 — 바이브 코딩 환경 설치 스크립트
+
+서울대학교 사범대학 부설여자중학교(서울사대부여중) **SNUG 온라인 오피스**에서 동료 교사들이 AI 보조 코딩(Vibe Coding) 환경을 한 줄 명령어로 갖추도록 만든 자동 설치 스크립트입니다. **Windows·macOS** 모두 지원합니다.
+
+---
+
+## 빠른 설치
+
+### Windows
+**일반 PowerShell**(관리자 권한 불필요)을 실행한 후 아래 한 줄 입력:
+
+```powershell
+irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
+```
+
+### macOS
+Terminal에서 아래 한 줄 입력:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash
+```
+
+설치 시간: 인터넷 속도에 따라 5~15분 소요.
+
+---
+
+## 무엇이 설치되나요?
+
+### 1. 시스템 패키지
+| 도구 | 용도 |
+|---|---|
+| Node.js (LTS) | npm 글로벌 패키지 실행 환경 |
+| Git | 버전 관리 |
+| GitHub CLI (`gh`) | GitHub 저장소·PR·이슈 관리 |
+| Python 3 | 일부 MCP 서버에서 사용 |
+| Homebrew (Mac) | Mac 패키지 매니저 |
+| jq (Mac) | JSON 파싱 |
+
+### 2. AI 및 개발 CLI (npm 글로벌)
+| 패키지 | 명령어 | 용도 |
+|---|---|---|
+| `@anthropic-ai/claude-code` | `claude` | Anthropic Claude AI CLI |
+| `@googleworkspace/cli` | `gws` | Google Sheets/Drive 등 Workspace CLI |
+| `@google/clasp` | `clasp` | Google Apps Script 도구 |
+| `firebase-tools` | `firebase` | Firebase 인증·Firestore·배포 |
+| `vercel` | `vercel` | Vercel 웹 배포 |
+| `serve` | `serve` | 로컬 정적 서버 |
+| `@playwright/test` | `playwright` | 웹 자동화·브라우저 테스트 |
+| `xlsx` | — | 엑셀(.xlsx) 파일 처리 라이브러리 |
+| `typescript` | `tsc` | TypeScript 컴파일러 |
+| `tsx` | `tsx` | TypeScript 즉시 실행 도구 |
+
+> **별도 설치 CLI(npm 아님)**: `agy`(Google Antigravity CLI — 기존 Gemini CLI 후속, 공식 install 스크립트로 설치), `supabase`(Supabase CLI — mac: brew tap / Windows: scoop). `gemini` CLI는 2026-06-18 종료 예정이라 `agy`로 교체되었습니다.
+
+### 3. Claude Code 확장
+- **MCP 서버**: `playwright`(브라우저 자동화), `chrome-devtools`(브라우저 디버깅·성능 분석), `context7`(라이브러리 공식 문서 검색), `sequential-thinking`(단계적 사고), `serena`(코드베이스 시맨틱 분석), `vercel`(배포 로그·상태 조회, 최초 1회 OAuth 인증 필요)
+- **Skill·플러그인**: `pbakaus/impeccable`(디자인 보조), `senior-frontend`(프론트엔드 코드 리뷰), `hookify`(AI 행동 hook 관리), `superpowers`(워크플로우 자동화), `caveman`(출력 압축), `document-skills`(pptx/docx/xlsx/pdf 문서 생성·편집)
+- **Playwright Chromium 브라우저** (약 150MB)
+
+### 4. 셸 환경
+- **Windows (PowerShell 7)**: `Tab` = 인라인 제안 수락, `→` = 다음 후보 이동
+- **macOS (zsh)**: Tab 자동완성, `cc` 별칭(=`claude --dangerously-skip-permissions`)
+
+---
+
+## 설치 후 첫 단계
+
+각 도구는 처음 한 번 인증이 필요합니다:
+
+```bash
+gh auth login         # GitHub
+gemini                # Google 계정 로그인 안내가 표시됨
+claude                # Anthropic 계정 로그인 안내가 표시됨
+gws login             # Google Workspace
+clasp login           # Google Apps Script
+firebase login        # Firebase (사용 시)
+```
+
+---
+
+## 동작 원리
+
+### Windows
+```
+PowerShell
+  └─ bootstrap.ps1                  (irm | iex 로 받아서 실행)
+       ├─ setup.bat / setup.ps1 을 %TEMP%\snug-setup\ 로 다운로드
+       └─ setup.bat 실행
+            ├─ chcp 65001            (UTF-8 콘솔로 전환)
+            ├─ pwsh.exe 호출         (PowerShell 7 우선, 없으면 5.1)
+            └─ setup.ps1 본 설치 작업
+```
+
+> **왜 bootstrap이 필요한가?** Windows는 cmd → PowerShell 진입 시 코드페이지 전환이 필요하고, `setup.bat`이 그 역할을 담당합니다. `bootstrap.ps1`은 두 파일을 묶어 한 줄 명령어로 만들기 위한 진입점입니다.
+
+### macOS
+```
+Terminal
+  └─ setup.sh                       (curl | bash 로 직접 실행)
+       └─ Homebrew + brew + npm 본 설치 작업
+```
+
+> Mac은 터미널이 기본 UTF-8이고 셸 환경이 일관적이라 중간 단계가 필요 없습니다.
+
+---
+
+## 파일 구성
+
+| 파일 | 역할 |
+|---|---|
+| `bootstrap.ps1` | Windows 한 줄 명령어 진입점 (`irm \| iex` 패턴) |
+| `setup.bat` | Windows cmd 진입점 (UTF-8 코드페이지 설정 + pwsh 호출) |
+| `setup.ps1` | Windows 본 설치 스크립트 (8단계) |
+| `setup.sh` | macOS 본 설치 스크립트 (8단계) |
+| `.gitattributes` | `*.sh=lf` / `*.bat,*.ps1=crlf` 강제 (Mac bash 호환) |
+| `README.md` | 본 문서 |
+
+---
+
+## 문제 해결
+
+### `irm` 또는 `iex` 명령을 찾을 수 없습니다 (Windows)
+PowerShell이 아닌 일반 cmd 창에서 실행한 경우입니다. 시작 메뉴 → "PowerShell" 검색 후 다시 시도하세요.
+
+### "이 시스템에서 스크립트를 실행할 수 없으므로..." (Windows)
+`bootstrap.ps1`은 내부적으로 `setup.bat`을 통해 `-ExecutionPolicy Bypass`로 실행되므로 정상 흐름에서는 발생하지 않습니다. 만약 발생하면 새 PowerShell 창에서 한 줄 명령어로 다시 실행하세요.
+
+### Mac에서 `\r: command not found` 오류
+`setup.sh`가 CRLF 줄바꿈으로 저장된 경우입니다. 본 저장소는 `.gitattributes`로 LF를 강제하므로 정상 다운로드 시 발생하지 않습니다. 발생 시:
+
+```bash
+sed -i '' 's/\r$//' setup.sh && bash setup.sh
+```
+
+### 한글이 깨져서 표시됨 (Windows)
+- 한 줄 명령어로 실행한 경우: 자동으로 `chcp 65001`이 호출되므로 정상.
+- `setup.ps1`만 직접 실행한 경우 발생 가능 → 항상 `setup.bat`(또는 한 줄 명령어)으로 시작하세요.
+
+### 권한 부족으로 일부 패키지 설치 실패
+- **Windows**: 새 PowerShell 창에서 한 줄 명령어로 다시 실행. winget이 UAC 프롬프트를 띄우면 "예"를 선택하세요. (관리자 권한으로 실행하면 scoop 설치가 우회 모드로 동작하므로 권장하지 않습니다.)
+- **macOS**: 실패한 패키지를 `sudo npm install -g <패키지명>`로 개별 재시도
+
+---
+
+## 유지보수자용 메모
+
+### 도구 추가/제거 시 절차
+1. `setup.ps1`의 `$NPM_GLOBALS` 배열과 `setup.sh`의 `NPM_GLOBALS` 배열을 **양쪽 모두** 수정
+2. MCP 서버 추가 시 `Add-Mcp`(ps1) / `add_mcp`(sh) 호출을 **양쪽 모두** 추가
+3. 변경 후 커밋 + push:
+   ```bash
+   git add . && git commit -m "..." && git push
+   ```
+4. push 즉시 다음 사용자부터 한 줄 명령어로 자동 반영됨 (URL은 영구 동일)
+
+### 줄바꿈 규칙 (중요)
+- `*.sh` 파일은 **반드시 LF**로 저장. CRLF로 커밋되면 Mac bash가 `\r: command not found` 오류를 냄.
+- `.gitattributes`가 자동으로 강제하지만, 외부 편집기 사용 시 주의.
+
+### 마스터 작업 위치
+- Windows 로컬 마스터: `C:\Users\user\agent\snug-vibe-coding-setup\`
+- 그 외 위치(`G:\내 드라이브\GDagent\` 등)에 있는 사본은 참고용일 뿐 편집 대상이 아님.
+
+---
+
+## 문의
+
+- 서울사대부여중 SNUG 온라인 오피스 채널
+- 내부 배포용 스크립트입니다.
+</file>
+
+<file path="setup.sh">
+#!/usr/bin/env bash
+# 🚦 [배포용] SNUG 온라인 오피스 바이브 코딩(AI 보조 코딩) 환경 설정 스크립트
+# 작성일: 2026-04-12 (확장 개편: 2026-04-27)
+# 용도: 동료 교사용 Claude / Gemini 기반 바이브 코딩 환경 자동 세팅 (macOS 전용)
+# 호환: macOS Apple Silicon(M1+) / Intel 모두 지원
+#
+# 실행 방법:
+#   1) 터미널에서 이 스크립트가 있는 폴더로 이동
+#   2) chmod +x setup.sh   (최초 1회만)
+#   3) ./setup.sh
+#
+# 주의: `set -e`는 의도적으로 사용하지 않음 — 한 패키지 설치 실패가
+#       전체 설치를 중단시키지 않도록 각 단계마다 개별적으로 오류를 처리한다.
+
+# === ANSI 색상 유틸 ===
+RED=$'\033[0;31m'
+GREEN=$'\033[0;32m'
+YELLOW=$'\033[0;33m'
+CYAN=$'\033[0;36m'
+GRAY=$'\033[0;90m'
+NC=$'\033[0m'
+
+# === macOS 환경 확인 ===
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  echo "${RED}이 스크립트는 macOS 전용입니다. Windows에서는 setup_distribution.ps1(.bat) 을 사용하세요.${NC}"
+  exit 1
+fi
+
+echo "${CYAN}==========================================================${NC}"
+echo "${CYAN}    SNUG 온라인 오피스 바이브 코딩 환경 설치를 시작합니다${NC}"
+echo "${CYAN}==========================================================${NC}"
+
+# ============================================================
+# 1. 셸 / Homebrew 점검
+# ============================================================
+echo ""
+echo "${YELLOW}[1/8] 셸 환경 / Homebrew 점검 중...${NC}"
+echo "  ✓ 셸: $SHELL"
+echo "  ✓ macOS: $(sw_vers -productVersion 2>/dev/null || echo unknown)"
+
+# Apple Silicon / Intel 양쪽의 brew 경로를 PATH에 노출
+if [[ -f /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -f /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+if ! command -v brew &>/dev/null; then
+  echo "  ${YELLOW}· Homebrew 미설치. 자동 설치를 시도합니다... (관리자 비밀번호가 필요할 수 있습니다)${NC}"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # 설치 직후 PATH 갱신
+  if [[ -f /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [[ -f /usr/local/bin/brew ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
+fi
+
+if ! command -v brew &>/dev/null; then
+  echo "  ${RED}✗ Homebrew 설치에 실패했습니다.${NC}"
+  echo "    ${CYAN}https://brew.sh 에서 수동 설치 후 다시 실행해 주세요.${NC}"
+  exit 1
+fi
+echo "  ${GREEN}✓ Homebrew $(brew --version | head -n1) 확인됨${NC}"
+
+# ============================================================
+# 2. Node.js 및 npm 설치 확인 (없으면 brew로 자동 설치)
+# ============================================================
+echo ""
+echo "${YELLOW}[2/8] 필수 엔진(Node.js) 점검 중...${NC}"
+if ! command -v npm &>/dev/null; then
+  echo "  Node.js 미설치. brew로 자동 설치를 시도합니다..."
+  brew install node
+fi
+if ! command -v npm &>/dev/null; then
+  echo "  ${RED}✗ Node.js 자동 설치에 실패했습니다.${NC}"
+  echo "    ${CYAN}https://nodejs.org/ 에서 'LTS 버전'을 수동 설치하고 다시 실행해 주세요.${NC}"
+  exit 1
+fi
+NODE_VER=$(node --version 2>/dev/null)
+echo "  ${GREEN}✓ Node.js ${NODE_VER} 확인되었습니다.${NC}"
+
+# ============================================================
+# 3. 보조 도구(Git / 코드 에디터 / Python / gh / jq) 점검 및 자동 설치
+# ============================================================
+echo ""
+echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena / rtk / agy / supabase) 점검 중...${NC}"
+
+# Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 brew로 자동 설치
+if command -v git &>/dev/null; then
+  echo "  ${GREEN}✓ Git 확인됨 ($(git --version))${NC}"
+else
+  echo "  · Git 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install git; then
+    echo "  ${GREEN}✓ Git 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ Git 자동 설치 실패. 수동 설치: https://git-scm.com/download/mac${NC}"
+  fi
+fi
+
+# 코드 에디터: VS Code 또는 Cursor 권장
+EDITOR_FOUND=false
+if command -v code &>/dev/null || [[ -d "/Applications/Visual Studio Code.app" ]]; then
+  echo "  ${GREEN}✓ Visual Studio Code 확인됨${NC}"
+  EDITOR_FOUND=true
+fi
+if command -v cursor &>/dev/null || [[ -d "/Applications/Cursor.app" ]]; then
+  echo "  ${GREEN}✓ Cursor 확인됨${NC}"
+  EDITOR_FOUND=true
+fi
+if ! $EDITOR_FOUND; then
+  echo "  ${YELLOW}✗ 코드 에디터가 감지되지 않았습니다.${NC}"
+  echo "    ${CYAN}VS Code(권장):    https://code.visualstudio.com/${NC}"
+  echo "    ${CYAN}Cursor(AI 편집기): https://cursor.com/${NC}"
+  echo "    ${CYAN}또는 brew:        brew install --cask visual-studio-code${NC}"
+fi
+
+# Python: 일부 AI 도구·MCP 서버에서 사용
+if command -v python3 &>/dev/null; then
+  echo "  ${GREEN}✓ Python 확인됨 ($(python3 --version))${NC}"
+else
+  echo "  ${GRAY}· Python3는 감지되지 않았지만 필수는 아닙니다. (필요 시 'brew install python')${NC}"
+fi
+
+# GitHub CLI(gh): GitHub 저장소·PR·이슈 관리 — 별도 설치
+if command -v gh &>/dev/null; then
+  GH_LINE=$(gh --version 2>/dev/null | head -n1)
+  echo "  ${GREEN}✓ GitHub CLI 확인됨 (${GH_LINE})${NC}"
+else
+  echo "  · GitHub CLI(gh) 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install gh; then
+    echo "  ${GREEN}✓ GitHub CLI(gh) 설치 완료. 'gh auth login' 으로 인증하세요.${NC}"
+  else
+    echo "  ${YELLOW}✗ gh 자동 설치 실패. 수동 설치: https://cli.github.com/${NC}"
+  fi
+fi
+
+# jq: JSON 처리 (gws 출력 파싱 등에 사용)
+if command -v jq &>/dev/null; then
+  echo "  ${GREEN}✓ jq 확인됨 ($(jq --version))${NC}"
+else
+  echo "  · jq 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install jq; then
+    echo "  ${GREEN}✓ jq 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ jq 자동 설치 실패. 수동 설치: https://jqlang.github.io/jq/download/${NC}"
+  fi
+fi
+
+# OpenJDK: Java 런타임 (PDF 변환 도구 opendataloader-pdf 등에 필요)
+if command -v java &>/dev/null; then
+  echo "  ${GREEN}✓ Java(OpenJDK) 확인됨 ($(java -version 2>&1 | head -n1))${NC}"
+else
+  echo "  · OpenJDK 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install openjdk; then
+    # keg-only 이므로 셸 PATH에 즉시 노출 (영구 등록은 [8/8] 셸 환경 단계에서 처리)
+    if [[ -d /opt/homebrew/opt/openjdk/bin ]]; then
+      export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+    elif [[ -d /usr/local/opt/openjdk/bin ]]; then
+      export PATH="/usr/local/opt/openjdk/bin:$PATH"
+    fi
+    echo "  ${GREEN}✓ OpenJDK 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ OpenJDK 자동 설치 실패. 수동: brew install openjdk${NC}"
+  fi
+fi
+
+# pipx: 격리된 Python CLI 도구 설치 (opendataloader-pdf 등)
+if command -v pipx &>/dev/null; then
+  echo "  ${GREEN}✓ pipx 확인됨 ($(pipx --version))${NC}"
+else
+  echo "  · pipx 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install pipx; then
+    pipx ensurepath >/dev/null 2>&1 || true
+    echo "  ${GREEN}✓ pipx 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ pipx 자동 설치 실패. 수동: brew install pipx${NC}"
+  fi
+fi
+
+# opendataloader-pdf: PDF → Markdown/JSON 변환 CLI (내부적으로 Java 11+ 사용)
+if command -v opendataloader-pdf &>/dev/null; then
+  echo "  ${GREEN}✓ opendataloader-pdf 확인됨${NC}"
+elif command -v pipx &>/dev/null; then
+  echo "  · opendataloader-pdf 미설치. pipx로 설치를 시도합니다..."
+  if pipx install opendataloader-pdf; then
+    echo "  ${GREEN}✓ opendataloader-pdf 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ opendataloader-pdf 설치 실패. 수동: pipx install opendataloader-pdf${NC}"
+  fi
+else
+  echo "  ${GRAY}· pipx가 없어 opendataloader-pdf 설치를 건너뜁니다.${NC}"
+fi
+
+# uv: 빠른 Python 패키지 매니저 (Serena 등 Python 기반 MCP/도구 설치에 사용)
+if command -v uv &>/dev/null; then
+  echo "  ${GREEN}✓ uv 확인됨 ($(uv --version))${NC}"
+else
+  echo "  · uv 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install uv; then
+    echo "  ${GREEN}✓ uv 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ uv 자동 설치 실패. 수동: brew install uv${NC}"
+  fi
+fi
+
+# serena: 코드베이스 시맨틱 분석 MCP 서버 (uv tool 로 격리 설치)
+# 공식 권장: 마켓플레이스 설치 금지 → 반드시 uv tool install 경로 사용
+if command -v serena &>/dev/null; then
+  echo "  ${GREEN}✓ serena 확인됨${NC}"
+elif command -v uv &>/dev/null; then
+  echo "  · serena 미설치. uv tool 로 설치를 시도합니다..."
+  if uv tool install -p 3.13 serena-agent@latest --prerelease=allow; then
+    echo "  ${GREEN}✓ serena 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ serena 설치 실패. 수동: uv tool install -p 3.13 serena-agent@latest --prerelease=allow${NC}"
+  fi
+else
+  echo "  ${GRAY}· uv가 없어 serena 설치를 건너뜁니다.${NC}"
+fi
+
+# rtk: AI CLI(Claude/Gemini)의 Bash 출력을 자동 압축해 LLM 토큰 60-90% 절감
+# (macOS 전용. Windows 네이티브 미지원이라 setup.ps1에는 포함하지 않음)
+if command -v rtk &>/dev/null; then
+  echo "  ${GREEN}✓ rtk 확인됨${NC}"
+else
+  echo "  · rtk 미설치. brew로 자동 설치를 시도합니다..."
+  if brew install rtk; then
+    echo "  ${GREEN}✓ rtk 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ rtk 자동 설치 실패. 수동: brew install rtk${NC}"
+  fi
+fi
+
+# agy: Google Antigravity CLI — 기존 Gemini CLI의 후속(2026-06-18 Gemini CLI 종료).
+# Go 바이너리라 npm이 아닌 공식 install.sh로 설치한다. 명령어는 'agy', 첫 실행 시 Google 로그인.
+if command -v agy &>/dev/null; then
+  echo "  ${GREEN}✓ agy(Antigravity CLI) 확인됨${NC}"
+else
+  echo "  · agy(Antigravity CLI) 미설치. 공식 설치 스크립트로 설치를 시도합니다..."
+  if curl -fsSL https://antigravity.google/cli/install.sh | bash; then
+    echo "  ${GREEN}✓ agy 설치 완료 (새 터미널에서 'agy auth login' 으로 로그인)${NC}"
+  else
+    echo "  ${YELLOW}✗ agy 자동 설치 실패. 수동: curl -fsSL https://antigravity.google/cli/install.sh | bash${NC}"
+  fi
+fi
+
+# supabase: Supabase(오픈소스 Firebase 대안) CLI — DB·인증·Edge Functions 로컬 개발·배포.
+# npm 글로벌 설치는 미지원. 1순위 brew tap, 실패 시(예: Command Line Tools 구버전으로 소스
+# 빌드 불가) 공식 prebuilt 바이너리를 GitHub 릴리스에서 직접 내려받아 설치한다.
+if command -v supabase &>/dev/null; then
+  echo "  ${GREEN}✓ supabase CLI 확인됨 ($(supabase --version 2>/dev/null | head -n1))${NC}"
+else
+  echo "  · supabase CLI 미설치. brew로 자동 설치를 시도합니다..."
+  brew install supabase/tap/supabase 2>/dev/null
+  if command -v supabase &>/dev/null; then
+    echo "  ${GREEN}✓ supabase CLI 설치 완료 (brew). 'supabase login' 으로 인증하세요.${NC}"
+  else
+    # brew 실패 → prebuilt 바이너리 직접 설치 (Command Line Tools 불필요)
+    echo "  ${GRAY}· brew 설치 실패 → GitHub 공식 바이너리로 재시도...${NC}"
+    case "$(uname -m)" in
+      arm64)  SB_ARCH="arm64" ;;
+      x86_64) SB_ARCH="amd64" ;;
+      *)      SB_ARCH="" ;;
+    esac
+    if [[ -z "$SB_ARCH" ]]; then
+      echo "  ${YELLOW}✗ 지원하지 않는 CPU 아키텍처($(uname -m)). 수동: https://github.com/supabase/cli/releases${NC}"
+    else
+      SB_BIN_DIR="$(brew --prefix 2>/dev/null)/bin"
+      [[ -d "$SB_BIN_DIR" && -w "$SB_BIN_DIR" ]] || SB_BIN_DIR="$HOME/.local/bin"
+      mkdir -p "$SB_BIN_DIR"
+      SB_TMP=$(mktemp -d)
+      if curl -fsSL "https://github.com/supabase/cli/releases/latest/download/supabase_darwin_${SB_ARCH}.tar.gz" -o "$SB_TMP/supabase.tar.gz" \
+         && tar -xzf "$SB_TMP/supabase.tar.gz" -C "$SB_TMP" supabase \
+         && mv -f "$SB_TMP/supabase" "$SB_BIN_DIR/supabase" \
+         && chmod +x "$SB_BIN_DIR/supabase"; then
+        echo "  ${GREEN}✓ supabase CLI 설치 완료 (바이너리 → $SB_BIN_DIR). 'supabase login' 으로 인증하세요.${NC}"
+      else
+        echo "  ${YELLOW}✗ supabase CLI 설치 실패. 수동: https://github.com/supabase/cli/releases 에서 supabase_darwin_${SB_ARCH}.tar.gz 다운로드${NC}"
+      fi
+      rm -rf "$SB_TMP"
+    fi
+  fi
+fi
+
+# ============================================================
+# 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
+# ============================================================
+echo ""
+echo "${YELLOW}[4/8] 인공지능 / 개발 CLI 도구 설치 및 업데이트 중 (잠시만 기다려 주세요)...${NC}"
+
+NPM_GLOBALS=(
+  "@anthropic-ai/claude-code@latest"   # Claude Code AI CLI (claude)
+  "@googleworkspace/cli@latest"        # gws — Google Sheets/Drive 등 Workspace CLI
+  "@google/clasp@latest"               # Google Apps Script 도구 (clasp)
+  "firebase-tools@latest"              # Firebase 인증·Firestore·배포 (firebase)
+  "vercel@latest"                      # Vercel 웹 배포 (vercel)
+  "serve@latest"                       # 로컬 정적 서버 (serve)
+  "@playwright/test@latest"            # 웹 자동화·브라우저 테스트
+  "xlsx@latest"                        # 엑셀(.xlsx) 파일 처리 라이브러리
+  "typescript@latest"                  # TypeScript 컴파일러 (tsc)
+  "tsx@latest"                         # TypeScript 즉시 실행 도구 (tsx)
+  "@musistudio/claude-code-router@latest"  # Claude Code Router (ccr) — Claude/모델 라우팅
+  "repomix@latest"                     # Repomix — AI 친화적 코드베이스 패킹 도구
+)
+
+for pkg in "${NPM_GLOBALS[@]}"; do
+  echo "  > $pkg 설치 중..."
+  if npm install -g "$pkg" --silent 2>/dev/null; then
+    echo "    ${GRAY}- $pkg 설치 성공${NC}"
+  else
+    echo "    ${YELLOW}- $pkg 설치 중 오류 발생 (이미 설치되어 있거나 권한 문제일 수 있음)${NC}"
+    echo "    ${GRAY}  필요 시: sudo npm install -g $pkg${NC}"
+  fi
+done
+
+# ============================================================
+# 5. Playwright 브라우저 바이너리 설치 (웹 자동화·스크린샷용)
+# ============================================================
+echo ""
+echo "${YELLOW}[5/8] Playwright 브라우저(Chromium) 설치 중...${NC}"
+echo "  ${GRAY}(웹 자동화/스크린샷에 사용. 약 150MB 다운로드)${NC}"
+if npx --yes playwright install chromium </dev/null; then
+  echo "  ${GREEN}✓ Playwright 브라우저 설치 완료${NC}"
+else
+  echo "  ${YELLOW}✗ Playwright 브라우저 설치 중 오류가 발생했습니다.${NC}"
+fi
+
+# ============================================================
+# 6. Claude Code MCP 서버 추가 (Claude의 능력을 확장하는 외부 도구들)
+# ============================================================
+echo ""
+echo "${YELLOW}[6/8] Claude Code MCP 서버 추가 중...${NC}"
+
+if command -v claude &>/dev/null; then
+  MCP_LIST=$(claude mcp list 2>/dev/null || echo "")
+
+  add_mcp() {
+    local name="$1"
+    local cmd="$2"
+    local desc="$3"
+    if echo "$MCP_LIST" | grep -q -- "$name"; then
+      echo "  ${GRAY}· MCP $name : 이미 등록됨 ($desc)${NC}"
+    else
+      echo "  > MCP $name 등록 중... ($desc)"
+      # shellcheck disable=SC2086
+      if claude mcp add "$name" -- $cmd >/dev/null 2>&1; then
+        echo "    ${GREEN}✓ $name 등록 완료${NC}"
+      else
+        echo "    ${YELLOW}✗ $name 등록 실패${NC}"
+      fi
+    fi
+  }
+
+  add_mcp "playwright"           "npx @playwright/mcp@latest"                              "브라우저 자동화/스크린샷"
+  add_mcp "chrome-devtools"      "npx chrome-devtools-mcp@latest"                          "브라우저 디버깅/성능 분석"
+  add_mcp "context7"             "npx -y @upstash/context7-mcp"                            "라이브러리 공식 문서 검색"
+  add_mcp "sequential-thinking"  "npx -y @modelcontextprotocol/server-sequential-thinking" "단계적 사고 도구"
+  add_mcp "serena"               "serena start-mcp-server --context claude-code --project-from-cwd" "코드베이스 시맨틱 분석"
+
+  # Vercel MCP: 원격(HTTP) 서버 — 배포 로그·상태 조회 (OAuth, 읽기 전용).
+  # add_mcp 헬퍼는 stdio(`-- 명령어`)용이라 HTTP transport는 별도로 처리한다.
+  if echo "$MCP_LIST" | grep -q -- "vercel"; then
+    echo "  ${GRAY}· MCP vercel : 이미 등록됨 (Vercel 배포 로그·상태 조회)${NC}"
+  else
+    echo "  > MCP vercel 등록 중... (Vercel 배포 로그·상태 조회 / 최초 1회 Claude에서 '/mcp'로 OAuth 인증 필요)"
+    if claude mcp add --transport http vercel https://mcp.vercel.com >/dev/null 2>&1; then
+      echo "    ${GREEN}✓ vercel 등록 완료 (Claude에서 '/mcp'로 인증하세요)${NC}"
+    else
+      echo "    ${YELLOW}✗ vercel 등록 실패${NC}"
+    fi
+  fi
+else
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 MCP 등록을 건너뜁니다. (Claude Code 설치 후 재실행)${NC}"
+fi
+
+# ============================================================
+# 7. Claude Code 디자인·프론트엔드 스킬 추가
+# pbakaus/impeccable: 디자인 보조 스킬 모음 (frontend-design, polish, delight, animate, audit 등)
+# senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
+# ============================================================
+echo ""
+echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills) 설치 중...${NC}"
+echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성)${NC}"
+
+if npx --yes skills add pbakaus/impeccable </dev/null; then
+  echo "  ${GREEN}✓ impeccable 스킬 설치 완료${NC}"
+else
+  echo "  ${YELLOW}✗ impeccable 스킬 설치 실패 (Claude Code 로그인 후 재시도)${NC}"
+fi
+
+SKILL_ROOT="$HOME/.claude/skills"
+if [[ -d "$SKILL_ROOT/senior-frontend" ]]; then
+  echo "  ${GRAY}· senior-frontend 스킬 이미 존재${NC}"
+else
+  if npx -y claude-code-templates@latest --skill development/senior-frontend </dev/null; then
+    echo "  ${GREEN}✓ senior-frontend 스킬 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ senior-frontend 스킬 설치 실패${NC}"
+  fi
+fi
+
+# Claude Code 공식 마켓플레이스 플러그인 (anthropics/claude-plugins-official)
+# - hookify    : 대화 분석/명시적 지시로부터 AI 행동 hook 자동 생성·관리
+# - superpowers: 브레인스토밍/계획/TDD/디버깅 등 워크플로우 자동화 스킬 모음
+if command -v claude &>/dev/null; then
+  CLAUDE_PLUGIN_LIST=$(claude plugin list 2>/dev/null || echo "")
+
+  install_claude_plugin() {
+    local name="$1"
+    if echo "$CLAUDE_PLUGIN_LIST" | grep -q "${name}@"; then
+      echo "  ${GRAY}· ${name} 플러그인 이미 설치됨${NC}"
+    else
+      echo "  > ${name} 플러그인 설치 중..."
+      if claude plugin install "${name}@claude-plugins-official" >/dev/null 2>&1; then
+        echo "  ${GREEN}✓ ${name} 플러그인 설치 완료${NC}"
+      else
+        echo "  ${YELLOW}✗ ${name} 플러그인 설치 실패 (Claude Code 로그인 후 재시도)${NC}"
+      fi
+    fi
+  }
+
+  install_claude_plugin "hookify"
+  install_claude_plugin "superpowers"
+else
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다.${NC}"
+fi
+
+# document-skills: Anthropic 공식 문서 처리 스킬 (pptx/docx/xlsx/pdf 생성·편집)
+# 별도 마켓플레이스(anthropics/skills)에서 설치 — 교사용 학습지·발표자료 제작에 활용
+echo "  > document-skills 플러그인 설치 중... (pptx/docx/xlsx/pdf 문서 생성·편집)"
+if command -v claude &>/dev/null; then
+  claude plugin marketplace add anthropics/skills 2>&1 || true
+  if claude plugin install document-skills@anthropic-agent-skills 2>&1; then
+    echo "  ${GREEN}✓ document-skills 플러그인 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ document-skills 설치 실패. 수동: claude plugin marketplace add anthropics/skills && claude plugin install document-skills@anthropic-agent-skills${NC}"
+  fi
+else
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 document-skills 설치를 건너뜁니다.${NC}"
+fi
+
+# caveman: Claude Code 플러그인으로 설치 (출력 압축 ~75% 토큰 절감)
+# curl|bash(non-TTY) 환경에서는 caveman 공식 install.sh가 claude plugin install을 건너뛰므로
+# 직접 claude plugin 명령어로 설치한다.
+echo "  > caveman 플러그인 설치 중... (JuliusBrussee/caveman)"
+if command -v claude &>/dev/null; then
+  claude plugin marketplace add JuliusBrussee/caveman 2>&1 || true
+  if claude plugin install caveman@caveman 2>&1; then
+    echo "  ${GREEN}✓ caveman 플러그인 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ caveman 설치 실패. 수동: claude plugin marketplace add JuliusBrussee/caveman && claude plugin install caveman@caveman${NC}"
+  fi
+else
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 caveman 설치를 건너뜁니다.${NC}"
+fi
+
+# ============================================================
+# 8. macOS 셸 환경 설정 (zsh 자동완성 + cc 별칭 + Karabiner 안내)
+#    - PowerShell 7의 PSReadLine 키 바인딩에 해당하는 macOS 측 설정
+# ============================================================
+echo ""
+echo "${YELLOW}[8/8] macOS 셸 환경 설정 (zsh 자동완성 / cc 별칭 / Karabiner 안내)...${NC}"
+
+# 셸 RC 파일 결정 (zsh 우선)
+SHELL_RC="$HOME/.zshrc"
+[[ "$SHELL" == */bash* ]] && SHELL_RC="$HOME/.bashrc"
+touch "$SHELL_RC"
+
+# (1) cc 별칭: claude --dangerously-skip-permissions 단축
+if grep -q "alias cc=" "$SHELL_RC" 2>/dev/null; then
+  echo "  ${GRAY}· alias cc 이미 등록됨${NC}"
+else
+  {
+    echo ""
+    echo "# === [setup.sh] Claude Code 단축 별칭 ==="
+    echo "alias cc='claude --dangerously-skip-permissions'"
+  } >> "$SHELL_RC"
+  echo "  ${GREEN}✓ alias cc 등록됨 ($SHELL_RC)${NC}"
+fi
+
+# (1-2) OpenJDK PATH 영구 등록 (keg-only 이므로 brew가 자동으로 PATH에 넣지 않음)
+if grep -q "openjdk/bin" "$SHELL_RC" 2>/dev/null; then
+  echo "  ${GRAY}· OpenJDK PATH 이미 등록됨${NC}"
+else
+  if [[ -d /opt/homebrew/opt/openjdk/bin ]]; then
+    {
+      echo ""
+      echo "# === [setup.sh] OpenJDK PATH (opendataloader-pdf 등 Java 도구용) ==="
+      echo 'export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"'
+    } >> "$SHELL_RC"
+    echo "  ${GREEN}✓ OpenJDK PATH 등록됨 (Apple Silicon)${NC}"
+  elif [[ -d /usr/local/opt/openjdk/bin ]]; then
+    {
+      echo ""
+      echo "# === [setup.sh] OpenJDK PATH (opendataloader-pdf 등 Java 도구용) ==="
+      echo 'export PATH="/usr/local/opt/openjdk/bin:$PATH"'
+    } >> "$SHELL_RC"
+    echo "  ${GREEN}✓ OpenJDK PATH 등록됨 (Intel)${NC}"
+  else
+    echo "  ${GRAY}· OpenJDK 미설치 상태 — PATH 등록 건너뜀${NC}"
+  fi
+fi
+
+# (2) zsh 자동완성 (Tab 키 동작)
+if [[ "$SHELL_RC" == *".zshrc" ]]; then
+  if grep -q "setup.sh] zsh 자동완성" "$SHELL_RC" 2>/dev/null; then
+    echo "  ${GRAY}· zsh 자동완성 설정 이미 등록됨${NC}"
+  else
+    cat >> "$SHELL_RC" <<'ZSHEOF'
+
+# === [setup.sh] zsh 자동완성 설정 ===
+# 제안이 있을 때 Tab 으로 즉시 수락, 없을 때는 기본 완성 동작 수행
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+ZSHEOF
+    echo "  ${GREEN}✓ zsh 자동완성 설정 추가됨${NC}"
+  fi
+fi
+
+# (3) Karabiner-Elements: Cmd+V → Ctrl+V 변환 (gemini/claude 실행 시 이미지 첨부용)
+if [[ -d "$HOME/.config/karabiner" ]]; then
+  echo "  ${GREEN}✓ Karabiner-Elements 설정 폴더 확인됨${NC}"
+  echo "    ${GRAY}이미지 첨부 단축키(Cmd+V→Ctrl+V) 매핑 파일은 Karabiner 앱에서 직접 활성화하세요.${NC}"
+  echo "    ${GRAY}경로: ~/.config/karabiner/assets/complex_modifications/${NC}"
+else
+  echo "  ${YELLOW}· Karabiner-Elements 미설치.${NC}"
+  echo "    ${GRAY}터미널(Warp/Ghostty)에서 Cmd+V로 이미지 첨부를 사용하려면 설치 권장:${NC}"
+  echo "    ${CYAN}brew install --cask karabiner-elements${NC}"
+fi
+
+# ============================================================
+# 완료
+# ============================================================
+echo ""
+echo "${GREEN}==========================================================${NC}"
+echo "${GREEN} 🎉 모든 필수 도구 설치가 완료되었습니다!${NC}"
+echo "${GREEN}==========================================================${NC}"
+echo ""
+echo "[다음 단계 안내]"
+echo "1. 'agy' 또는 'claude' 명령어로 AI 대화를 시작하세요."
+echo "   (또는 'cc' — claude 권한 스킵 모드 단축키)"
+echo "   ${CYAN}agy(Antigravity CLI)는 기존 gemini CLI의 후속입니다. 첫 실행: 'agy auth login'${NC}"
+echo "2. 'gws login' / 'clasp login' 으로 구글 워크스페이스 인증을 완료하세요."
+echo "3. 'firebase login' / 'supabase login' 으로 백엔드(Firebase·Supabase) 인증을 완료하세요. (사용 시)"
+echo "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장소 사용 시)"
+echo "5. 새 터미널 창을 열어야 alias cc / 자동완성 설정이 적용됩니다."
+echo "   ${CYAN}또는 즉시 적용: source $SHELL_RC${NC}"
+echo "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
+echo "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel) 동작을 확인하세요."
+echo "   ${CYAN}(vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)${NC}"
+echo "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
+echo ""
+</file>
+
+<file path="setup.ps1">
+# 🚦 [배포용] SNUG 온라인 오피스 바이브 코딩(AI 보조 코딩) 환경 설정 스크립트
+# 작성일: 2026-04-14 (확장 개편: 2026-04-27)
+# 용도: 동료 교사용 Claude / Gemini 기반 바이브 코딩 환경 자동 세팅 (Windows 전용)
+
+# === PowerShell 7 자동 승격 ===
+# 우클릭→Windows PowerShell 5.1로 실행되더라도 자동으로 7로 재실행되도록 처리.
+# 5.1에서는 한글 인코딩/연산자(&&, ||) 호환 문제가 발생하므로 7 이상에서만 본문을 실행한다.
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    $pwsh = "C:\Program Files\PowerShell\7\pwsh.exe"
+    if (Test-Path $pwsh) {
+        Write-Host "PowerShell 7으로 다시 실행합니다..." -ForegroundColor Yellow
+        Start-Process -FilePath $pwsh -ArgumentList "-NoExit","-ExecutionPolicy","Bypass","-File","`"$PSCommandPath`""
+        exit
+    } else {
+        Write-Warning "PowerShell 7이 설치되어 있지 않습니다."
+        Write-Host "먼저 https://aka.ms/pscore6 에서 PowerShell 7을 설치한 뒤 다시 실행해 주세요." -ForegroundColor Cyan
+        pause
+        exit
+    }
+}
+
+# === 한글 인코딩(UTF-8) ===
+# 콘솔 코드페이지는 setup.bat에서 pwsh 실행 전에 이미 65001(UTF-8)로 설정된다.
+# 여기서 chcp를 다시 호출하면 출력 버퍼가 꼬여 첫 몇 줄에서 한글이 중복(예: "확확인인")으로
+# 보이는 현상이 발생하므로, .NET 측 인코딩만 안전장치로 일치시킨다.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
+# === 권한 체크 ===
+# 일반(비관리자) PowerShell 실행을 권장한다. winget의 머신 전역 패키지는 필요 시
+# UAC 프롬프트로 처리되고, scoop은 사용자 프로파일에 정상 설치된다. 관리자 세션에서는
+# scoop이 -RunAsAdmin 우회 모드로 설치되므로 권장하지 않는다.
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if ($isAdmin) {
+    Write-Warning "관리자 권한 세션에서 실행 중입니다. 일반 PowerShell 실행을 권장합니다."
+    Write-Host "  → scoop은 일반 권한에서 정상 설치되고, winget은 필요 시 UAC 프롬프트로 처리됩니다." -ForegroundColor Cyan
+}
+
+# === PATH 환경변수 새로고침 + 콘솔 VT 모드 복원 헬퍼 ===
+# winget 등 일부 설치 프로그램이 실행되면 콘솔 VT 모드(ENABLE_VIRTUAL_TERMINAL_PROCESSING)를
+# 꺼버려 이후 ANSI 색상 코드가 두 글자씩 겹쳐 출력되는 버그가 발생한다.
+# kernel32 SetConsoleMode API로 플래그를 다시 켜서 복원한다.
+function Reset-ConsoleVT {
+    try {
+        Add-Type -MemberDefinition @'
+[DllImport("kernel32.dll")] public static extern bool GetConsoleMode(IntPtr h, out uint m);
+[DllImport("kernel32.dll")] public static extern bool SetConsoleMode(IntPtr h, uint m);
+[DllImport("kernel32.dll")] public static extern IntPtr GetStdHandle(int n);
+'@ -Name 'KernelVT' -Namespace 'Win32' -ErrorAction SilentlyContinue
+    } catch {}
+    try {
+        $h = [Win32.KernelVT]::GetStdHandle(-11)   # STD_OUTPUT_HANDLE
+        $m = 0
+        [void][Win32.KernelVT]::GetConsoleMode($h, [ref]$m)
+        [void][Win32.KernelVT]::SetConsoleMode($h, $m -bor 0x0004)  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+    } catch {}
+}
+function Reload-Path {
+    $env:PATH = [System.Environment]::GetEnvironmentVariable('PATH','Machine') + ";" + [System.Environment]::GetEnvironmentVariable('PATH','User')
+    Reset-ConsoleVT
+}
+
+Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host "    SNUG 온라인 오피스 바이브 코딩 환경 설치를 시작합니다" -ForegroundColor Cyan
+Write-Host "==========================================================" -ForegroundColor Cyan
+
+# 1. PowerShell 버전 / 인코딩 상태 확인
+Write-Host "
+[1/8] PowerShell 버전 / 한글 인코딩 확인 중..." -ForegroundColor Yellow
+Write-Host "  ✓ PowerShell $($PSVersionTable.PSVersion) 환경" -ForegroundColor Green
+Write-Host "  ✓ UTF-8 콘솔 인코딩 적용됨" -ForegroundColor Green
+
+# 2. Node.js 및 npm 설치 확인 (없으면 winget으로 자동 설치 시도)
+Write-Host "
+[2/8] 필수 엔진(Node.js) 점검 중..." -ForegroundColor Yellow
+if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+    Write-Host "  Node.js 미설치. winget으로 자동 설치를 시도합니다..." -ForegroundColor Yellow
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install -e --id OpenJS.NodeJS.LTS --silent --accept-package-agreements --accept-source-agreements
+        Reload-Path
+    }
+    if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+        Write-Error "Node.js 자동 설치에 실패했습니다."
+        Write-Host "https://nodejs.org/ 에서 'LTS 버전'을 수동 설치하고 다시 실행해 주세요." -ForegroundColor Red
+        pause
+        exit
+    }
+}
+$nodeVer = (& node --version) 2>$null
+Write-Host "  ✓ Node.js $nodeVer 확인되었습니다." -ForegroundColor Green
+
+# 3. 보조 도구(Git, 코드 에디터, Python, gh, OpenJDK, pipx, opendataloader-pdf) 점검 및 자동 설치
+Write-Host "
+[3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf / uv / serena / WSL / rtk / agy / supabase) 점검 중..." -ForegroundColor Yellow
+
+# Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 winget으로 자동 설치
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    $gitVer = (& git --version) 2>$null
+    Write-Host "  ✓ Git 확인됨 ($gitVer)" -ForegroundColor Green
+} else {
+    Write-Host "  · Git 미설치. winget으로 자동 설치를 시도합니다..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install -e --id Git.Git --silent --accept-package-agreements --accept-source-agreements
+        Reload-Path
+        if (Get-Command git -ErrorAction SilentlyContinue) {
+            Write-Host "  ✓ Git 설치 완료" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ Git 자동 설치 실패. 수동 설치: https://git-scm.com/download/win"
+        }
+    } else {
+        Write-Warning "  ✗ winget 미지원. 수동 설치: https://git-scm.com/download/win"
+    }
+}
+
+# 코드 에디터: VS Code 또는 Cursor 권장
+$editorFound = $false
+if (Get-Command code -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ Visual Studio Code 확인됨" -ForegroundColor Green
+    $editorFound = $true
+}
+if (Get-Command cursor -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ Cursor 확인됨" -ForegroundColor Green
+    $editorFound = $true
+}
+if (-not $editorFound) {
+    Write-Warning "  ✗ 코드 에디터가 감지되지 않았습니다."
+    Write-Host "    VS Code(권장):  https://code.visualstudio.com/" -ForegroundColor Cyan
+    Write-Host "    Cursor(AI 편집기): https://cursor.com/" -ForegroundColor Cyan
+}
+
+# Python: 일부 AI 도구·MCP 서버에서 사용
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    $pyVer = (& python --version) 2>$null
+    Write-Host "  ✓ Python 확인됨 ($pyVer)" -ForegroundColor Green
+} else {
+    Write-Host "  · Python은 감지되지 않았지만 필수는 아닙니다. (MCP·일부 AI 도구 사용 시 필요)" -ForegroundColor Gray
+    Write-Host "    설치 링크: https://www.python.org/downloads/" -ForegroundColor Cyan
+}
+
+# GitHub CLI(gh): GitHub 저장소·PR·이슈 관리. npm이 아닌 별도 설치 — winget으로 자동 설치 시도.
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+    $ghLine = (& gh --version 2>$null | Select-Object -First 1)
+    Write-Host "  ✓ GitHub CLI 확인됨 ($ghLine)" -ForegroundColor Green
+} else {
+    Write-Host "  · GitHub CLI(gh) 미설치. winget으로 자동 설치를 시도합니다..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install --id GitHub.cli -e --silent --accept-package-agreements --accept-source-agreements
+        Reset-ConsoleVT
+        if (Get-Command gh -ErrorAction SilentlyContinue) {
+            Write-Host "  ✓ GitHub CLI(gh) 설치 완료. 새 터미널을 열어 'gh' 명령을 사용하세요." -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ winget 설치가 즉시 반영되지 않았습니다. 새 터미널에서 'gh' 동작 여부를 확인해 주세요."
+            Write-Host "    수동 설치 링크: https://cli.github.com/" -ForegroundColor Cyan
+        }
+    } else {
+        Write-Warning "  ✗ winget을 찾을 수 없습니다. 수동 설치가 필요합니다."
+        Write-Host "    설치 링크: https://cli.github.com/" -ForegroundColor Cyan
+    }
+}
+
+# OpenJDK: Java 런타임 (PDF 변환 도구 opendataloader-pdf 등에 필요)
+if (Get-Command java -ErrorAction SilentlyContinue) {
+    $javaLine = (& java -version 2>&1 | Select-Object -First 1)
+    Write-Host "  ✓ Java 확인됨 ($javaLine)" -ForegroundColor Green
+} else {
+    Write-Host "  · OpenJDK 미설치. winget으로 자동 설치를 시도합니다..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install -e --id Microsoft.OpenJDK.21 --silent --accept-package-agreements --accept-source-agreements
+        Reload-Path
+        if (Get-Command java -ErrorAction SilentlyContinue) {
+            Write-Host "  ✓ OpenJDK 설치 완료" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ OpenJDK 자동 설치 실패. 새 터미널에서 'java -version' 확인 후 재실행해 주세요."
+            Write-Host "    수동 설치: https://learn.microsoft.com/java/openjdk/download" -ForegroundColor Cyan
+        }
+    } else {
+        Write-Warning "  ✗ winget을 찾을 수 없어 OpenJDK 자동 설치 불가."
+        Write-Host "    수동 설치: https://learn.microsoft.com/java/openjdk/download" -ForegroundColor Cyan
+    }
+}
+
+# pipx: 격리된 Python CLI 도구 설치 (opendataloader-pdf 등)
+# pip install --user 방식은 Windows에서 PATH 반영이 불안정하므로 scoop을 사용한다.
+if (Get-Command pipx -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ pipx 확인됨" -ForegroundColor Green
+} else {
+    # scoop이 없으면 먼저 설치
+    if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+        Write-Host "  · scoop 미설치. pipx 설치를 위해 scoop을 먼저 설치합니다..." -ForegroundColor Gray
+        # 그룹 정책으로 정책이 덮어쓰여 있으면 경고가 뜨지만 무해하므로 억제한다.
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        # scoop 설치 스크립트는 관리자 권한 세션에서 기본적으로 중단된다("Running the installer
+        # as administrator is disabled by default"). 관리자 세션이면 -RunAsAdmin 스위치를 넘겨 진행한다.
+        $scoopInstaller = Invoke-RestMethod -Uri https://get.scoop.sh
+        if ($isAdmin) {
+            Write-Host "    (관리자 권한 세션 감지 → scoop을 -RunAsAdmin 모드로 설치)" -ForegroundColor Gray
+            & ([scriptblock]::Create($scoopInstaller)) -RunAsAdmin
+        } else {
+            & ([scriptblock]::Create($scoopInstaller))
+        }
+        Reload-Path
+    }
+    if (Get-Command scoop -ErrorAction SilentlyContinue) {
+        Write-Host "  · pipx 미설치. scoop으로 설치를 시도합니다..." -ForegroundColor Gray
+        scoop install pipx 2>&1 | Out-Null
+        Reload-Path
+        if (Get-Command pipx -ErrorAction SilentlyContinue) {
+            pipx ensurepath 2>&1 | Out-Null
+            Write-Host "  ✓ pipx 설치 완료 (via scoop)" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ pipx 설치 실패. 수동: scoop install pipx"
+        }
+    } else {
+        Write-Warning "  ✗ scoop 설치 실패. 아래 명령어로 수동 설치 후 재실행하세요."
+        Write-Host "    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser" -ForegroundColor Cyan
+        Write-Host "    Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression" -ForegroundColor Cyan
+    }
+}
+
+# opendataloader-pdf: PDF → Markdown/JSON 변환 CLI (내부적으로 Java 11+ 사용)
+if (Get-Command opendataloader-pdf -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ opendataloader-pdf 확인됨" -ForegroundColor Green
+} elseif (Get-Command pipx -ErrorAction SilentlyContinue) {
+    Write-Host "  · opendataloader-pdf 미설치. pipx로 설치를 시도합니다..." -ForegroundColor Gray
+    pipx install opendataloader-pdf 2>&1 | Out-Null
+    if (Get-Command opendataloader-pdf -ErrorAction SilentlyContinue) {
+        Write-Host "  ✓ opendataloader-pdf 설치 완료" -ForegroundColor Green
+    } else {
+        Write-Warning "  ✗ opendataloader-pdf 설치 실패. 수동: pipx install opendataloader-pdf"
+    }
+} else {
+    Write-Host "  · pipx가 없어 opendataloader-pdf 설치를 건너뜁니다." -ForegroundColor Gray
+}
+
+# uv: 빠른 Python 패키지 매니저 (Serena 등 Python 기반 MCP/도구 설치에 사용)
+if (Get-Command uv -ErrorAction SilentlyContinue) {
+    $uvVer = (& uv --version) 2>$null
+    Write-Host "  ✓ uv 확인됨 ($uvVer)" -ForegroundColor Green
+} else {
+    Write-Host "  · uv 미설치. winget으로 자동 설치를 시도합니다..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install -e --id astral-sh.uv --silent --accept-package-agreements --accept-source-agreements
+        Reload-Path
+        if (Get-Command uv -ErrorAction SilentlyContinue) {
+            Write-Host "  ✓ uv 설치 완료" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ uv 자동 설치 실패. 수동: winget install astral-sh.uv"
+        }
+    } else {
+        Write-Warning "  ✗ winget을 찾을 수 없어 uv 자동 설치 불가."
+        Write-Host "    수동 설치: https://docs.astral.sh/uv/getting-started/installation/" -ForegroundColor Cyan
+    }
+}
+
+# serena: 코드베이스 시맨틱 분석 MCP 서버 (uv tool 로 격리 설치)
+# 공식 권장: 마켓플레이스 설치 금지 → 반드시 uv tool install 경로 사용
+if (Get-Command serena -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ serena 확인됨" -ForegroundColor Green
+} elseif (Get-Command uv -ErrorAction SilentlyContinue) {
+    Write-Host "  · serena 미설치. uv tool 로 설치를 시도합니다..." -ForegroundColor Gray
+    uv tool install -p 3.13 serena-agent@latest --prerelease=allow 2>&1 | Out-Null
+    Reload-Path
+    if (Get-Command serena -ErrorAction SilentlyContinue) {
+        Write-Host "  ✓ serena 설치 완료" -ForegroundColor Green
+    } else {
+        Write-Warning "  ✗ serena 설치 실패. 수동: uv tool install -p 3.13 serena-agent@latest --prerelease=allow"
+    }
+} else {
+    Write-Host "  · uv가 없어 serena 설치를 건너뜁니다." -ForegroundColor Gray
+}
+
+# WSL: rtk 등 Linux 전용 도구 실행용 Windows Subsystem for Linux
+# 'wsl -l -q' 가 비어있지 않으면 distro 설치된 상태. 없으면 'wsl --install --no-launch'로 자동 설치.
+# 첫 설치는 관리자 권한 필요 + 재부팅 후 Ubuntu 초기 설정(사용자명/비밀번호) 필요.
+$wslInstalled = $false
+if (Get-Command wsl -ErrorAction SilentlyContinue) {
+    $wslDistros = (wsl -l -q 2>$null) -join "" -replace "`0",""
+    if ($wslDistros.Trim()) {
+        Write-Host "  ✓ WSL 확인됨 (설치된 distro: $($wslDistros.Trim() -split "`r?`n" -join ', '))" -ForegroundColor Green
+        $wslInstalled = $true
+    }
+}
+if (-not $wslInstalled) {
+    if ($isAdmin) {
+        Write-Host "  · WSL 미설치. 'wsl --install --no-launch' 로 자동 설치를 시도합니다... (재부팅 필요)" -ForegroundColor Gray
+        wsl --install --no-launch 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  ✓ WSL 설치 명령 실행 완료. 재부팅 후 Ubuntu 초기 설정(사용자명/비밀번호)을 마쳐야 합니다." -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ WSL 자동 설치 실패. 수동: 관리자 PowerShell에서 'wsl --install'"
+        }
+    } else {
+        Write-Warning "  ✗ WSL 미설치. 자동 설치는 관리자 권한이 필요합니다."
+        Write-Host "    수동: 관리자 PowerShell에서 'wsl --install' 실행 후 재부팅" -ForegroundColor Cyan
+    }
+}
+
+# rtk: AI CLI Bash 출력 압축 도구 (Windows 네이티브 미지원 — WSL 안에서 설치 권장)
+if (Get-Command rtk -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ rtk 확인됨" -ForegroundColor Green
+} else {
+    Write-Host "  · rtk 미설치. Windows 네이티브 자동 설치는 미지원입니다." -ForegroundColor Gray
+    Write-Host "    WSL(권장):  wsl -- bash -c 'curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh'" -ForegroundColor Cyan
+    Write-Host "    네이티브:   https://github.com/rtk-ai/rtk/releases (rtk-x86_64-pc-windows-msvc.zip)" -ForegroundColor Cyan
+}
+
+# agy: Google Antigravity CLI — 기존 Gemini CLI의 후속(2026-06-18 Gemini CLI 종료).
+# Go 바이너리라 npm이 아닌 공식 install.ps1로 설치한다. 명령어는 'agy', 첫 실행 시 Google 로그인.
+if (Get-Command agy -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ agy(Antigravity CLI) 확인됨" -ForegroundColor Green
+} else {
+    Write-Host "  · agy(Antigravity CLI) 미설치. 공식 설치 스크립트로 설치를 시도합니다..." -ForegroundColor Gray
+    try {
+        Invoke-RestMethod -Uri https://antigravity.google/cli/install.ps1 | Invoke-Expression
+        Reload-Path
+        if (Get-Command agy -ErrorAction SilentlyContinue) {
+            Write-Host "  ✓ agy 설치 완료 (새 터미널에서 'agy auth login' 으로 로그인)" -ForegroundColor Green
+        } else {
+            Write-Warning "  ✗ agy 설치가 즉시 반영되지 않았습니다. 새 터미널에서 'agy' 동작 여부를 확인해 주세요."
+        }
+    } catch {
+        Write-Warning "  ✗ agy 자동 설치 실패. 수동: irm https://antigravity.google/cli/install.ps1 | iex"
+    }
+}
+
+# supabase: Supabase(오픈소스 Firebase 대안) CLI — DB·인증·Edge Functions 로컬 개발·배포.
+# npm 글로벌 설치는 미지원이므로 scoop bucket 으로 설치한다.
+if (Get-Command supabase -ErrorAction SilentlyContinue) {
+    Write-Host "  ✓ supabase CLI 확인됨" -ForegroundColor Green
+} elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+    Write-Host "  · supabase CLI 미설치. scoop으로 설치를 시도합니다..." -ForegroundColor Gray
+    scoop bucket add supabase https://github.com/supabase/scoop-bucket.git 2>&1 | Out-Null
+    scoop install supabase 2>&1 | Out-Null
+    Reload-Path
+    if (Get-Command supabase -ErrorAction SilentlyContinue) {
+        Write-Host "  ✓ supabase CLI 설치 완료. 'supabase login' 으로 인증하세요." -ForegroundColor Green
+    } else {
+        Write-Warning "  ✗ supabase CLI 설치 실패. 수동: scoop bucket add supabase https://github.com/supabase/scoop-bucket.git; scoop install supabase"
+    }
+} else {
+    Write-Warning "  ✗ scoop이 없어 supabase CLI 설치를 건너뜁니다."
+    Write-Host "    수동: scoop bucket add supabase https://github.com/supabase/scoop-bucket.git; scoop install supabase" -ForegroundColor Cyan
+}
+
+# 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
+Write-Host "
+[4/8] 인공지능 / 개발 CLI 도구 설치 및 업데이트 중 (잠시만 기다려 주세요)..." -ForegroundColor Yellow
+
+# 일반 npm 글로벌 패키지 (postinstall에서 Expand-Archive를 호출하지 않는 패키지들)
+$NPM_GLOBALS = @(
+    "@anthropic-ai/claude-code@latest",   # Claude Code AI CLI (claude)
+    "@google/clasp@latest",               # Google Apps Script 도구 (clasp)
+    "firebase-tools@latest",              # Firebase 인증·Firestore·배포 (firebase)
+    "vercel@latest",                      # Vercel 웹 배포 (vercel)
+    "serve@latest",                       # 로컬 정적 서버 (serve)
+    "@playwright/test@latest",            # 웹 자동화·브라우저 테스트
+    "xlsx@latest",                        # 엑셀(.xlsx) 파일 처리 라이브러리
+    "typescript@latest",                  # TypeScript 컴파일러 (tsc)
+    "tsx@latest",                         # TypeScript 즉시 실행 도구 (tsx)
+    "@musistudio/claude-code-router@latest",  # Claude Code Router (ccr) — Claude/모델 라우팅
+    "repomix@latest"                      # Repomix — AI 친화적 코드베이스 패킹 도구
+)
+
+foreach ($pkg in $NPM_GLOBALS) {
+    Write-Host "  > $pkg 설치 중..."
+    npm install -g $pkg --silent
+    if ($?) {
+        Write-Host "    - $pkg 설치 성공" -ForegroundColor Gray
+    } else {
+        Write-Warning "    - $pkg 설치 중 오류 발생 (이미 설치되어 있거나 권한 문제일 수 있습니다)"
+    }
+}
+
+# @googleworkspace/cli (gws) 는 postinstall에서 Expand-Archive(Write-Progress)를 호출해
+# 콘솔 VT 상태를 깨뜨리고 그 결과 한글 출력이 두 글자씩 겹쳐 보이는 렌더 버그를 유발한다.
+# → 출력을 로그 파일로 리다이렉트하여 진행률 바가 콘솔에 직접 그려지지 않게 한다.
+Write-Host "  > @googleworkspace/cli@latest 설치 중... (gws CLI, 진행 상황은 로그 파일로 기록)"
+$gwsLog = Join-Path $env:TEMP "snug-setup-gws-install.log"
+npm install -g "@googleworkspace/cli@latest" --silent *>> $gwsLog
+if ($?) {
+    Write-Host "    - @googleworkspace/cli 설치 성공 (로그: $gwsLog)" -ForegroundColor Gray
+} else {
+    Write-Warning "    - @googleworkspace/cli 설치 실패. 로그 확인: $gwsLog"
+}
+
+# 5. Playwright 브라우저 바이너리 설치 (웹 자동화·스크린샷용)
+Write-Host "
+[5/8] Playwright 브라우저(Chromium) 설치 중..." -ForegroundColor Yellow
+Write-Host "  (웹 자동화/스크린샷에 사용. 약 150MB 다운로드)" -ForegroundColor Gray
+npx --yes playwright install chromium
+if ($?) {
+    Write-Host "  Playwright 브라우저 설치 완료" -ForegroundColor Green
+} else {
+    Write-Warning "  Playwright 브라우저 설치 중 오류가 발생했습니다."
+}
+
+# 6. Claude Code MCP 서버 추가 (Claude의 능력을 확장하는 외부 도구들)
+Write-Host "
+[6/8] Claude Code MCP 서버 추가 중..." -ForegroundColor Yellow
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    $mcpList = (claude mcp list 2>$null) | Out-String
+    function Add-Mcp {
+        param([string]$Name, [string]$Cmd, [string]$Desc)
+        if ($mcpList -match [regex]::Escape($Name)) {
+            Write-Host "  · MCP $Name : 이미 등록됨 ($Desc)" -ForegroundColor Gray
+        } else {
+            Write-Host "  > MCP $Name 등록 중... ($Desc)"
+            claude mcp add $Name -- $Cmd 2>&1 | Out-Null
+            if ($?) {
+                Write-Host "    ✓ $Name 등록 완료" -ForegroundColor Green
+            } else {
+                Write-Warning "    ✗ $Name 등록 실패"
+            }
+        }
+    }
+    Add-Mcp "playwright"           "npx @playwright/mcp@latest"                                     "브라우저 자동화/스크린샷"
+    Add-Mcp "chrome-devtools"      "npx chrome-devtools-mcp@latest"                                 "브라우저 디버깅/성능 분석"
+    Add-Mcp "context7"             "npx -y @upstash/context7-mcp"                                   "라이브러리 공식 문서 검색"
+    Add-Mcp "sequential-thinking"  "npx -y @modelcontextprotocol/server-sequential-thinking"        "단계적 사고 도구"
+    Add-Mcp "serena"               "serena start-mcp-server --context claude-code --project-from-cwd" "코드베이스 시맨틱 분석"
+
+    # Vercel MCP: 원격(HTTP) 서버 — 배포 로그·상태 조회 (OAuth, 읽기 전용).
+    # Add-Mcp 헬퍼는 stdio(`-- 명령어`)용이라 HTTP transport는 별도로 처리한다.
+    if ($mcpList -match "vercel") {
+        Write-Host "  · MCP vercel : 이미 등록됨 (Vercel 배포 로그·상태 조회)" -ForegroundColor Gray
+    } else {
+        Write-Host "  > MCP vercel 등록 중... (Vercel 배포 로그·상태 조회 / 최초 1회 Claude에서 '/mcp'로 OAuth 인증 필요)"
+        claude mcp add --transport http vercel https://mcp.vercel.com 2>&1 | Out-Null
+        if ($?) {
+            Write-Host "    ✓ vercel 등록 완료 (Claude에서 '/mcp'로 인증하세요)" -ForegroundColor Green
+        } else {
+            Write-Warning "    ✗ vercel 등록 실패"
+        }
+    }
+} else {
+    Write-Warning "  claude 명령을 찾을 수 없어 MCP 등록을 건너뜁니다. (Claude Code 설치 후 재실행)"
+}
+
+# 7. Claude Code 디자인·프론트엔드 스킬 추가
+# pbakaus/impeccable: 디자인 보조 스킬 모음 (frontend-design, polish, delight, animate, audit 등)
+# senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
+Write-Host "
+[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills) 설치 중..." -ForegroundColor Yellow
+Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성)" -ForegroundColor Gray
+
+npx --yes skills add pbakaus/impeccable
+if ($?) { Write-Host "  ✓ impeccable 스킬 설치 완료" -ForegroundColor Green }
+else { Write-Warning "  ✗ impeccable 스킬 설치 실패 (Claude Code 로그인 후 재시도)" }
+
+$skillRoot = Join-Path $env:USERPROFILE ".claude\skills"
+if (Test-Path (Join-Path $skillRoot "senior-frontend")) {
+    Write-Host "  · senior-frontend 스킬 이미 존재" -ForegroundColor Gray
+} else {
+    npx -y claude-code-templates@latest --skill development/senior-frontend
+    if ($?) { Write-Host "  ✓ senior-frontend 스킬 설치 완료" -ForegroundColor Green }
+    else { Write-Warning "  ✗ senior-frontend 스킬 설치 실패" }
+}
+
+# Claude Code 공식 마켓플레이스 플러그인 (anthropics/claude-plugins-official)
+# - hookify    : 대화 분석/명시적 지시로부터 AI 행동 hook 자동 생성·관리
+# - superpowers: 브레인스토밍/계획/TDD/디버깅 등 워크플로우 자동화 스킬 모음
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    $pluginList = (claude plugin list 2>$null) | Out-String
+    function Install-ClaudePlugin {
+        param([string]$Name)
+        if ($pluginList -match "${Name}@") {
+            Write-Host "  · $Name 플러그인 이미 설치됨" -ForegroundColor Gray
+        } else {
+            Write-Host "  > $Name 플러그인 설치 중..."
+            claude plugin install "${Name}@claude-plugins-official" 2>&1 | Out-Null
+            if ($?) {
+                Write-Host "  ✓ $Name 플러그인 설치 완료" -ForegroundColor Green
+            } else {
+                Write-Warning "  ✗ $Name 플러그인 설치 실패 (Claude Code 로그인 후 재시도)"
+            }
+        }
+    }
+    Install-ClaudePlugin "hookify"
+    Install-ClaudePlugin "superpowers"
+} else {
+    Write-Warning "  claude 명령을 찾을 수 없어 플러그인 설치를 건너뜁니다."
+}
+
+# document-skills: Anthropic 공식 문서 처리 스킬 (pptx/docx/xlsx/pdf 생성·편집)
+# 별도 마켓플레이스(anthropics/skills)에서 설치 — 교사용 학습지·발표자료 제작에 활용
+Write-Host "  > document-skills 플러그인 설치 중... (pptx/docx/xlsx/pdf 문서 생성·편집)"
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    claude plugin marketplace add anthropics/skills
+    try {
+        claude plugin install document-skills@anthropic-agent-skills
+        Write-Host "  ✓ document-skills 플러그인 설치 완료" -ForegroundColor Green
+    } catch {
+        Write-Warning "  ✗ document-skills 설치 실패. 수동: claude plugin marketplace add anthropics/skills; claude plugin install document-skills@anthropic-agent-skills"
+    }
+} else {
+    Write-Host "  claude 명령을 찾을 수 없어 document-skills 설치를 건너뜁니다." -ForegroundColor Yellow
+}
+
+# caveman: Claude Code 플러그인으로 설치 (출력 압축 ~75% 토큰 절감)
+# irm|iex(non-TTY) 환경에서는 caveman 공식 install.ps1이 claude plugin install을 건너뛰므로
+# 직접 claude plugin 명령어로 설치한다.
+Write-Host "  > caveman 플러그인 설치 중... (JuliusBrussee/caveman)"
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    claude plugin marketplace add JuliusBrussee/caveman
+    try {
+        claude plugin install caveman@caveman
+        Write-Host "  ✓ caveman 플러그인 설치 완료" -ForegroundColor Green
+    } catch {
+        Write-Warning "  ✗ caveman 설치 실패. 수동: claude plugin marketplace add JuliusBrussee/caveman; claude plugin install caveman@caveman"
+    }
+} else {
+    Write-Host "  claude 명령을 찾을 수 없어 caveman 설치를 건너뜁니다." -ForegroundColor Yellow
+}
+
+# 8. PowerShell 7 프로필에 PSReadLine 자동완성 키 등록
+# Tab → AcceptSuggestion (인라인 회색 제안 즉시 수락)
+# RightArrow → TabCompleteNext (다음 후보로 이동)
+# 주의: PowerShell 7 전용 프로필($PROFILE)에만 기록 → 5.1 세션은 영향 없음.
+Write-Host "
+[8/8] PowerShell 7 자동완성 키 바인딩 설정 중..." -ForegroundColor Yellow
+$profilePath = $PROFILE
+$profileDir = Split-Path $profilePath -Parent
+if (-not (Test-Path $profileDir)) {
+    New-Item -Path $profileDir -ItemType Directory -Force | Out-Null
+}
+if (-not (Test-Path $profilePath)) {
+    New-Item -Path $profilePath -ItemType File -Force | Out-Null
+}
+$profileContent = Get-Content $profilePath -Raw -ErrorAction SilentlyContinue
+if ($profileContent -notmatch "AcceptSuggestion") {
+    $bindBlock = @"
+
+# === [setup_distribution] PSReadLine 자동완성 키 (PowerShell 7 전용) ===
+if (`$PSVersionTable.PSVersion.Major -ge 7) {
+    Set-PSReadLineKeyHandler -Key Tab -Function AcceptSuggestion
+    Set-PSReadLineKeyHandler -Key RightArrow -Function TabCompleteNext
+}
+"@
+    Add-Content -Path $profilePath -Value $bindBlock -Encoding utf8
+    Write-Host "  ✓ Tab → AcceptSuggestion / RightArrow → TabCompleteNext 등록됨" -ForegroundColor Green
+    Write-Host "    적용 위치: $profilePath" -ForegroundColor Gray
+} else {
+    Write-Host "  · 자동완성 키 바인딩 이미 등록됨" -ForegroundColor Gray
+}
+
+if ($profileContent -notmatch "function cc") {
+    $ccBlock = @"
+
+# === [setup_distribution] cc 단축 별칭: claude --dangerously-skip-permissions ===
+function cc { claude --dangerously-skip-permissions @args }
+"@
+    Add-Content -Path $profilePath -Value $ccBlock -Encoding utf8
+    Write-Host "  ✓ 'cc' 단축 명령 등록됨 (= claude --dangerously-skip-permissions)" -ForegroundColor Green
+} else {
+    Write-Host "  · 'cc' 단축 명령 이미 등록됨" -ForegroundColor Gray
+}
+
+Write-Host "
+==========================================================" -ForegroundColor Green
+Write-Host " 🎉 모든 필수 도구 설치가 완료되었습니다!" -ForegroundColor Green
+Write-Host "==========================================================" -ForegroundColor Green
+Write-Host "
+[다음 단계 안내]"
+Write-Host "1. 'agy' 또는 'claude' 명령어로 AI 대화를 시작하세요. (agy는 기존 gemini CLI의 후속 — 첫 실행: 'agy auth login')"
+Write-Host "2. 'gws login' / 'clasp login' 으로 구글 워크스페이스 인증을 완료하세요."
+Write-Host "3. 'firebase login' / 'supabase login' 으로 백엔드(Firebase·Supabase) 인증을 완료하세요. (사용 시)"
+Write-Host "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장소 사용 시)"
+Write-Host "5. 새 PowerShell 7 창을 열어야 자동완성 키(Tab/→)가 적용됩니다."
+Write-Host "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
+Write-Host "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel) 동작을 확인하세요."
+Write-Host "   (vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)" -ForegroundColor Cyan
+Write-Host "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
+Write-Host "
+아무 키나 누르면 창이 닫힙니다..."
+pause
+</file>
+
+</files>
