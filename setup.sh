@@ -301,6 +301,7 @@ NPM_GLOBALS=(
   "typescript@latest"                  # TypeScript 컴파일러 (tsc)
   "tsx@latest"                         # TypeScript 즉시 실행 도구 (tsx)
   "@musistudio/claude-code-router@latest"  # Claude Code Router (ccr) — Claude/모델 라우팅
+  "repomix@latest"                     # Repomix — AI 친화적 코드베이스 패킹 도구
 )
 
 for pkg in "${NPM_GLOBALS[@]}"; do

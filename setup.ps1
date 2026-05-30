@@ -1,4 +1,4 @@
-﻿# 🚦 [배포용] SNUG 온라인 오피스 바이브 코딩(AI 보조 코딩) 환경 설정 스크립트
+# 🚦 [배포용] SNUG 온라인 오피스 바이브 코딩(AI 보조 코딩) 환경 설정 스크립트
 # 작성일: 2026-04-14 (확장 개편: 2026-04-27)
 # 용도: 동료 교사용 Claude / Gemini 기반 바이브 코딩 환경 자동 세팅 (Windows 전용)
 
@@ -357,7 +357,8 @@ $NPM_GLOBALS = @(
     "xlsx@latest",                        # 엑셀(.xlsx) 파일 처리 라이브러리
     "typescript@latest",                  # TypeScript 컴파일러 (tsc)
     "tsx@latest",                         # TypeScript 즉시 실행 도구 (tsx)
-    "@musistudio/claude-code-router@latest"  # Claude Code Router (ccr) — Claude/모델 라우팅
+    "@musistudio/claude-code-router@latest",  # Claude Code Router (ccr) — Claude/모델 라우팅
+    "repomix@latest"                      # Repomix — AI 친화적 코드베이스 패킹 도구
 )
 
 foreach ($pkg in $NPM_GLOBALS) {
