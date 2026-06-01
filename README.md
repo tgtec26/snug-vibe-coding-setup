@@ -7,11 +7,16 @@
 ## 빠른 설치
 
 ### Windows
-**일반 PowerShell**(관리자 권한 불필요)을 실행한 후 아래 한 줄 입력:
+**일반 PowerShell**(관리자 권한 권장하지 않음)을 실행한 후 아래 한 줄 입력:
 
 ```powershell
 irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
 ```
+
+> ⚠️ **권한 안내**: 대부분의 도구는 일반 PowerShell에서 설치됩니다. 단,
+> - **winget**으로 설치되는 패키지(Node.js·Git·OpenJDK·uv 등)는 설치 중 **UAC(권한 상승) 창**을 띄울 수 있습니다 → "예"를 누르면 됩니다(관리자로 *시작*할 필요는 없음).
+> - **WSL 자동 설치**(Windows에서 rtk를 쓰기 위한 선택 기능)는 **관리자 PowerShell**이 필요합니다. 일반 권한으로 실행하면 WSL 단계만 건너뛰고 안내 메시지를 출력합니다 — 나머지는 정상 설치됩니다.
+> - 반대로 **scoop**(supabase·pipx용)은 일반 권한에서만 정상 설치되므로, 관리자 PowerShell로 *시작*하는 것은 권장하지 않습니다.
 
 ### macOS
 Terminal에서 아래 한 줄 입력:
