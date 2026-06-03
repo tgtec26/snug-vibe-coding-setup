@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 🚦 [배포용] SNUG 온라인 오피스 바이브 코딩(AI 보조 코딩) 환경 설정 스크립트
 # 작성일: 2026-04-12 (확장 개편: 2026-04-27)
-# 용도: 동료 교사용 Claude / Gemini 기반 바이브 코딩 환경 자동 세팅 (macOS 전용)
+# 용도: 동료 교사용 Claude / AI 코딩 도구 기반 바이브 코딩 환경 자동 세팅 (macOS 전용)
 # 호환: macOS Apple Silicon(M1+) / Intel 모두 지원
 #
 # 실행 방법:
@@ -20,15 +20,32 @@ CYAN=$'\033[0;36m'
 GRAY=$'\033[0;90m'
 NC=$'\033[0m'
 
+# === 설치 모드 ===
+# 기본값은 초급 연수용 기본 설치. 심화 도구는 --full 또는 SNUG_SETUP_MODE=full 일 때만 설치한다.
+INSTALL_MODE="${SNUG_SETUP_MODE:-basic}"
+for arg in "$@"; do
+  case "$arg" in
+    --full) INSTALL_MODE="full" ;;
+    --basic) INSTALL_MODE="basic" ;;
+  esac
+done
+if [[ "$INSTALL_MODE" == "full" ]]; then
+  IS_FULL=true
+else
+  IS_FULL=false
+  INSTALL_MODE="basic"
+fi
+
 # === macOS 환경 확인 ===
 if [[ "$(uname -s)" != "Darwin" ]]; then
-  echo "${RED}이 스크립트는 macOS 전용입니다. Windows에서는 setup_distribution.ps1(.bat) 을 사용하세요.${NC}"
+  echo "${RED}이 스크립트는 macOS 전용입니다. Windows에서는 bootstrap.ps1 또는 setup.bat을 사용하세요.${NC}"
   exit 1
 fi
 
 echo "${CYAN}==========================================================${NC}"
 echo "${CYAN}    SNUG 온라인 오피스 바이브 코딩 환경 설치를 시작합니다${NC}"
 echo "${CYAN}==========================================================${NC}"
+echo "설치 모드: ${INSTALL_MODE} (basic=초급 필수, full=심화 도구 포함)"
 
 # ============================================================
 # 1. 셸 / Homebrew 점검
@@ -84,7 +101,11 @@ echo "  ${GREEN}✓ Node.js ${NODE_VER} 확인되었습니다.${NC}"
 # 3. 보조 도구(Git / 코드 에디터 / Python / gh / jq) 점검 및 자동 설치
 # ============================================================
 echo ""
-echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena / rtk / agy / supabase) 점검 중...${NC}"
+if $IS_FULL; then
+  echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena / rtk / agy / supabase) 점검 중...${NC}"
+else
+  echo "${YELLOW}[3/8] 초급 필수 도구(Git / 에디터 / gh) 점검 중...${NC}"
+fi
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 brew로 자동 설치
 if command -v git &>/dev/null; then
@@ -115,13 +136,6 @@ if ! $EDITOR_FOUND; then
   echo "    ${CYAN}또는 brew:        brew install --cask visual-studio-code${NC}"
 fi
 
-# Python: 일부 AI 도구·MCP 서버에서 사용
-if command -v python3 &>/dev/null; then
-  echo "  ${GREEN}✓ Python 확인됨 ($(python3 --version))${NC}"
-else
-  echo "  ${GRAY}· Python3는 감지되지 않았지만 필수는 아닙니다. (필요 시 'brew install python')${NC}"
-fi
-
 # GitHub CLI(gh): GitHub 저장소·PR·이슈 관리 — 별도 설치
 if command -v gh &>/dev/null; then
   GH_LINE=$(gh --version 2>/dev/null | head -n1)
@@ -133,6 +147,14 @@ else
   else
     echo "  ${YELLOW}✗ gh 자동 설치 실패. 수동 설치: https://cli.github.com/${NC}"
   fi
+fi
+
+if $IS_FULL; then
+# Python: 일부 AI 도구·MCP 서버에서 사용
+if command -v python3 &>/dev/null; then
+  echo "  ${GREEN}✓ Python 확인됨 ($(python3 --version))${NC}"
+else
+  echo "  ${GRAY}· Python3는 감지되지 않았지만 필수는 아닙니다. (필요 시 'brew install python')${NC}"
 fi
 
 # jq: JSON 처리 (gws 출력 파싱 등에 사용)
@@ -219,7 +241,7 @@ else
   echo "  ${GRAY}· uv가 없어 serena 설치를 건너뜁니다.${NC}"
 fi
 
-# rtk: AI CLI(Claude/Gemini)의 Bash 출력을 자동 압축해 LLM 토큰 60-90% 절감
+# rtk: AI CLI(Claude/agy)의 Bash 출력을 자동 압축해 LLM 토큰 60-90% 절감
 # (macOS 전용. Windows 네이티브 미지원이라 setup.ps1에는 포함하지 않음)
 if command -v rtk &>/dev/null; then
   echo "  ${GREEN}✓ rtk 확인됨${NC}"
@@ -232,7 +254,7 @@ else
   fi
 fi
 
-# agy: Google Antigravity CLI — 기존 Gemini CLI의 후속(2026-06-18 Gemini CLI 종료).
+# agy: Google Antigravity CLI.
 # Go 바이너리라 npm이 아닌 공식 install.sh로 설치한다. 명령어는 'agy', 첫 실행 시 Google 로그인.
 if command -v agy &>/dev/null; then
   echo "  ${GREEN}✓ agy(Antigravity CLI) 확인됨${NC}"
@@ -282,6 +304,9 @@ else
     fi
   fi
 fi
+else
+  echo "  ${GRAY}· 심화 도구(jq/OpenJDK/pipx/uv/serena/rtk/agy/supabase)는 기본 설치에서 건너뜁니다. 필요 시 --full 로 다시 실행하세요.${NC}"
+fi
 
 # ============================================================
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
@@ -289,13 +314,16 @@ fi
 echo ""
 echo "${YELLOW}[4/8] 인공지능 / 개발 CLI 도구 설치 및 업데이트 중 (잠시만 기다려 주세요)...${NC}"
 
-NPM_GLOBALS=(
+BASIC_NPM_GLOBALS=(
   "@anthropic-ai/claude-code@latest"   # Claude Code AI CLI (claude)
+  "serve@latest"                       # 로컬 정적 서버 (serve)
+)
+
+FULL_NPM_GLOBALS=(
   "@googleworkspace/cli@latest"        # gws — Google Sheets/Drive 등 Workspace CLI
   "@google/clasp@latest"               # Google Apps Script 도구 (clasp)
   "firebase-tools@latest"              # Firebase 인증·Firestore·배포 (firebase)
   "vercel@latest"                      # Vercel 웹 배포 (vercel)
-  "serve@latest"                       # 로컬 정적 서버 (serve)
   "@playwright/test@latest"            # 웹 자동화·브라우저 테스트
   "xlsx@latest"                        # 엑셀(.xlsx) 파일 처리 라이브러리
   "typescript@latest"                  # TypeScript 컴파일러 (tsc)
@@ -304,6 +332,11 @@ NPM_GLOBALS=(
   "repomix@latest"                     # Repomix — AI 친화적 코드베이스 패킹 도구
   "@agentmemory/agentmemory@latest"    # agentmemory — 코딩 에이전트 영속 메모리(iii 엔진 자동설치)
 )
+
+NPM_GLOBALS=("${BASIC_NPM_GLOBALS[@]}")
+if $IS_FULL; then
+  NPM_GLOBALS+=("${FULL_NPM_GLOBALS[@]}")
+fi
 
 for pkg in "${NPM_GLOBALS[@]}"; do
   echo "  > $pkg 설치 중..."
@@ -321,10 +354,14 @@ done
 echo ""
 echo "${YELLOW}[5/8] Playwright 브라우저(Chromium) 설치 중...${NC}"
 echo "  ${GRAY}(웹 자동화/스크린샷에 사용. 약 150MB 다운로드)${NC}"
-if npx --yes playwright install chromium </dev/null; then
-  echo "  ${GREEN}✓ Playwright 브라우저 설치 완료${NC}"
+if $IS_FULL; then
+  if npx --yes playwright install chromium >/dev/null 2>&1; then
+    echo "  ${GREEN}✓ Playwright 브라우저 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ Playwright 브라우저 설치 중 오류가 발생했습니다. 전체 설치는 계속 진행합니다.${NC}"
+  fi
 else
-  echo "  ${YELLOW}✗ Playwright 브라우저 설치 중 오류가 발생했습니다.${NC}"
+  echo "  ${GRAY}· 기본 설치에서는 Playwright 브라우저 다운로드를 건너뜁니다. 필요 시 --full 로 다시 실행하세요.${NC}"
 fi
 
 # ============================================================
@@ -333,7 +370,9 @@ fi
 echo ""
 echo "${YELLOW}[6/8] Claude Code MCP 서버 추가 중...${NC}"
 
-if command -v claude &>/dev/null; then
+if ! $IS_FULL; then
+  echo "  ${GRAY}· MCP 서버 등록은 전체/심화 설치에서만 진행합니다. 필요 시 --full 로 다시 실행하세요.${NC}"
+elif command -v claude &>/dev/null; then
   MCP_LIST=$(claude mcp list 2>/dev/null || echo "")
 
   add_mcp() {
@@ -384,6 +423,9 @@ echo ""
 echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / agentmemory) 설치 중...${NC}"
 echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성 + 영속 메모리)${NC}"
 
+if ! $IS_FULL; then
+  echo "  ${GRAY}· Claude Code 추가 스킬·플러그인은 전체/심화 설치에서만 진행합니다. 필요 시 --full 로 다시 실행하세요.${NC}"
+else
 if npx --yes skills add pbakaus/impeccable </dev/null; then
   echo "  ${GREEN}✓ impeccable 스킬 설치 완료${NC}"
 else
@@ -474,6 +516,7 @@ if command -v agentmemory &>/dev/null && command -v claude &>/dev/null; then
 else
   echo "  ${YELLOW}agentmemory 또는 claude 명령을 찾을 수 없어 agentmemory 연동을 건너뜁니다.${NC}"
 fi
+fi
 
 # ============================================================
 # 8. macOS 셸 환경 설정 (zsh 자동완성 + cc 별칭 + Karabiner 안내)
@@ -501,7 +544,9 @@ fi
 
 # (1-1) agentmemory 엔진 자동기동: 영속 메모리는 iii 엔진(:3111) 상시 실행이 필요.
 # 터미널 열 때 엔진이 안 떠 있으면 백그라운드로 시작한다(비차단 — 셸 시작 지연 없음).
-if grep -q "setup.sh] agentmemory 엔진" "$SHELL_RC" 2>/dev/null; then
+if ! $IS_FULL; then
+  echo "  ${GRAY}· agentmemory 엔진 자동기동은 기본 설치에서 건너뜁니다.${NC}"
+elif grep -q "setup.sh] agentmemory 엔진" "$SHELL_RC" 2>/dev/null; then
   echo "  ${GRAY}· agentmemory 엔진 자동기동 이미 등록됨${NC}"
 else
   {
@@ -553,7 +598,7 @@ ZSHEOF
   fi
 fi
 
-# (3) Karabiner-Elements: Cmd+V → Ctrl+V 변환 (gemini/claude 실행 시 이미지 첨부용)
+# (3) Karabiner-Elements: Cmd+V → Ctrl+V 변환 (agy/claude 실행 시 이미지 첨부용)
 if [[ -d "$HOME/.config/karabiner" ]]; then
   echo "  ${GREEN}✓ Karabiner-Elements 설정 폴더 확인됨${NC}"
   echo "    ${GRAY}이미지 첨부 단축키(Cmd+V→Ctrl+V) 매핑 파일은 Karabiner 앱에서 직접 활성화하세요.${NC}"
@@ -573,17 +618,15 @@ echo "${GREEN} 🎉 모든 필수 도구 설치가 완료되었습니다!${NC}"
 echo "${GREEN}==========================================================${NC}"
 echo ""
 echo "[다음 단계 안내]"
-echo "1. 'agy' 또는 'claude' 명령어로 AI 대화를 시작하세요."
+echo "1. 초급 필수: 'gh auth login' 후 'gh auth status'로 GitHub 인증을 확인하세요."
+echo "2. 'claude' 명령어로 AI 대화를 시작하세요."
 echo "   (또는 'cc' — claude 권한 스킵 모드 단축키)"
-echo "   ${CYAN}agy(Antigravity CLI)는 기존 gemini CLI의 후속입니다. 첫 실행: 'agy auth login'${NC}"
-echo "2. 'gws login' / 'clasp login' 으로 구글 워크스페이스 인증을 완료하세요."
-echo "3. 'firebase login' / 'supabase login' 으로 백엔드(Firebase·Supabase) 인증을 완료하세요. (사용 시)"
-echo "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장소 사용 시)"
-echo "5. 새 터미널 창을 열어야 alias cc / 자동완성 설정이 적용됩니다."
+echo "3. 선택/심화: 'agy auth login', 'gws login', 'clasp login', 'firebase login', 'vercel login', 'supabase login'을 필요한 도구만 실행하세요."
+echo "4. 새 터미널 창을 열어야 alias cc / 자동완성 설정이 적용됩니다."
 echo "   ${CYAN}또는 즉시 적용: source $SHELL_RC${NC}"
-echo "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-echo "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel/agentmemory) 동작을 확인하세요."
+echo "5. 전체/심화 설치를 했다면 Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
+echo "6. 전체/심화 설치를 했다면 Claude 시작 후 '/mcp' 로 등록된 MCP 서버 동작을 확인하세요."
 echo "   ${CYAN}(vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)${NC}"
 echo "   ${CYAN}(agentmemory 영속 메모리: 새 터미널을 열면 엔진이 자동 기동됩니다. 'agentmemory status'로 확인)${NC}"
-echo "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
+echo "7. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
 echo ""

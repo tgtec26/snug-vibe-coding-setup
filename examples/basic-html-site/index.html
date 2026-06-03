@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>수업용 OX 퀴즈</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #24302f;
+      --muted: #60706d;
+      --paper: #fffaf0;
+      --panel: #f7efe0;
+      --line: #d9c9aa;
+      --green: #237a57;
+      --red: #b34a3c;
+      --blue: #2f67b1;
+      --focus: #e8b44f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+
+    main {
+      width: min(920px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: end;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 4rem);
+      letter-spacing: 0;
+      line-height: 1;
+    }
+
+    .subtitle {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .score-box {
+      min-width: 132px;
+      padding: 14px 16px;
+      border: 2px solid var(--ink);
+      background: #f0d98b;
+      text-align: center;
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+
+    .score-number {
+      display: block;
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .score-label {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.88rem;
+    }
+
+    .quiz {
+      display: grid;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .question {
+      padding: 22px;
+      border: 2px solid var(--line);
+      background: var(--panel);
+    }
+
+    .question h2 {
+      margin: 0 0 14px;
+      font-size: clamp(1.08rem, 2.8vw, 1.35rem);
+      letter-spacing: 0;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    button {
+      min-height: 48px;
+      border: 2px solid var(--ink);
+      background: #fffdf7;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    button:focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    button.selected {
+      background: #cfe8dc;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    .feedback {
+      min-height: 28px;
+      margin: 14px 0 0;
+      font-weight: 700;
+    }
+
+    .feedback.correct {
+      color: var(--green);
+    }
+
+    .feedback.wrong {
+      color: var(--red);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .primary {
+      background: var(--blue);
+      color: #fffdf7;
+    }
+
+    .secondary {
+      background: #fffdf7;
+    }
+
+    .result {
+      min-height: 34px;
+      margin-top: 16px;
+      font-size: 1.08rem;
+      font-weight: 800;
+    }
+
+    @media (max-width: 640px) {
+      main {
+        width: min(100% - 24px, 920px);
+        padding: 24px 0;
+      }
+
+      header {
+        grid-template-columns: 1fr;
+      }
+
+      .score-box {
+        width: 100%;
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+
+      .choices {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>수업 OX 퀴즈</h1>
+        <p class="subtitle">문항을 고르고 정답 확인을 누르면 점수가 표시됩니다.</p>
+      </div>
+      <div class="score-box" aria-live="polite">
+        <span class="score-number" id="score">0</span>
+        <span class="score-label">3점 만점</span>
+      </div>
+    </header>
+
+    <section class="quiz" id="quiz" aria-label="OX 퀴즈"></section>
+
+    <div class="actions">
+      <button class="primary" id="checkButton" type="button">정답 확인</button>
+      <button class="secondary" id="resetButton" type="button">다시 풀기</button>
+    </div>
+    <p class="result" id="result" aria-live="polite"></p>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        text: "GitHub Pages는 HTML, CSS, JavaScript로 만든 정적 웹사이트를 공개할 수 있다.",
+        answer: true,
+        explanation: "맞아요. 정적 수업 자료를 공개하기 좋습니다."
+      },
+      {
+        text: "public 저장소에는 학생 이름, 학번, 성적을 올려도 괜찮다.",
+        answer: false,
+        explanation: "개인정보는 public 저장소에 올리면 안 됩니다."
+      },
+      {
+        text: "index.html 파일은 GitHub Pages에서 첫 화면으로 사용될 수 있다.",
+        answer: true,
+        explanation: "맞아요. 보통 index.html이 첫 화면입니다."
+      }
+    ];
+
+    const answers = new Array(questions.length).fill(null);
+    const quiz = document.querySelector("#quiz");
+    const score = document.querySelector("#score");
+    const result = document.querySelector("#result");
+    const checkButton = document.querySelector("#checkButton");
+    const resetButton = document.querySelector("#resetButton");
+
+    function renderQuiz() {
+      quiz.innerHTML = "";
+      questions.forEach((question, index) => {
+        const article = document.createElement("article");
+        article.className = "question";
+        article.innerHTML = `
+          <h2>${index + 1}. ${question.text}</h2>
+          <div class="choices">
+            <button type="button" data-index="${index}" data-value="true">O</button>
+            <button type="button" data-index="${index}" data-value="false">X</button>
+          </div>
+          <p class="feedback" id="feedback-${index}" aria-live="polite"></p>
+        `;
+        quiz.appendChild(article);
+      });
+    }
+
+    function selectAnswer(event) {
+      const button = event.target.closest("button[data-index]");
+      if (!button) return;
+
+      const index = Number(button.dataset.index);
+      answers[index] = button.dataset.value === "true";
+
+      const group = button.parentElement;
+      group.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
+      button.classList.add("selected");
+
+      document.querySelector(`#feedback-${index}`).textContent = "";
+      result.textContent = "";
+    }
+
+    function checkAnswers() {
+      let correctCount = 0;
+
+      questions.forEach((question, index) => {
+        const feedback = document.querySelector(`#feedback-${index}`);
+        if (answers[index] === null) {
+          feedback.textContent = "아직 답을 고르지 않았어요.";
+          feedback.className = "feedback wrong";
+          return;
+        }
+
+        if (answers[index] === question.answer) {
+          correctCount += 1;
+          feedback.textContent = `정답! ${question.explanation}`;
+          feedback.className = "feedback correct";
+        } else {
+          feedback.textContent = `다시 생각해 봐요. ${question.explanation}`;
+          feedback.className = "feedback wrong";
+        }
+      });
+
+      score.textContent = correctCount;
+      result.textContent = `총 ${questions.length}문항 중 ${correctCount}문항을 맞혔습니다.`;
+    }
+
+    function resetQuiz() {
+      answers.fill(null);
+      score.textContent = "0";
+      result.textContent = "";
+      document.querySelectorAll(".selected").forEach((button) => button.classList.remove("selected"));
+      document.querySelectorAll(".feedback").forEach((item) => {
+        item.textContent = "";
+        item.className = "feedback";
+      });
+    }
+
+    renderQuiz();
+    quiz.addEventListener("click", selectAnswer);
+    checkButton.addEventListener("click", checkAnswers);
+    resetButton.addEventListener("click", resetQuiz);
+  </script>
+</body>
+</html>

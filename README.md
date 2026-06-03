@@ -1,175 +1,272 @@
-# SNUG 온라인 오피스 — 바이브 코딩 환경 설치 스크립트
+# SNUG 바이브코딩 초기 세팅 도구
 
-서울대학교 사범대학 부설여자중학교(서울사대부여중) **SNUG 온라인 오피스**에서 동료 교사들이 AI 보조 코딩(Vibe Coding) 환경을 한 줄 명령어로 갖추도록 만든 자동 설치 스크립트입니다. **Windows·macOS** 모두 지원합니다.
+웹사이트 제작 경험이 거의 없고 GitHub도 처음 사용하는 선생님이, AI 코딩 도구로 수업용 인터랙티브 웹사이트를 만들고 GitHub Pages에 공개할 수 있도록 준비하는 설치 저장소입니다.
 
----
+## 이 저장소는 무엇인가?
+
+- Windows와 macOS에서 기본 개발 도구를 설치합니다.
+- GitHub 인증, Git 사용자 정보 설정, 첫 정적 웹사이트 실행, GitHub Pages 배포 흐름을 안내합니다.
+- 초급 연수에서는 꼭 필요한 도구만 설치하고, 심화 도구는 선택으로 분리합니다.
+
+## 누구를 위한 것인가?
+
+- HTML/CSS/JavaScript를 처음 배우는 선생님
+- GitHub 저장소와 GitHub Pages를 처음 사용하는 선생님
+- Claude Code, ChatGPT, agy Antigravity CLI 같은 AI 도구로 수업 자료를 만들고 싶은 선생님
 
 ## 빠른 설치
 
+설치가 중간에 실패해도 같은 명령어를 다시 실행해도 됩니다. 이미 설치된 항목은 건너뛰거나 업데이트되고, 실패한 항목만 다시 시도됩니다.
+
 ### Windows
-**일반 PowerShell**(관리자 권한 권장하지 않음)을 실행한 후 아래 한 줄 입력:
+
+PowerShell을 열고 실행합니다. 관리자 권한으로 시작하지 않아도 됩니다.
 
 ```powershell
 irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
 ```
 
-> ⚠️ **권한 안내**: 대부분의 도구는 일반 PowerShell에서 설치됩니다. 단,
-> - **winget**으로 설치되는 패키지(Node.js·Git·OpenJDK·uv 등)는 설치 중 **UAC(권한 상승) 창**을 띄울 수 있습니다 → "예"를 누르면 됩니다(관리자로 *시작*할 필요는 없음).
-> - **WSL 자동 설치**(Windows에서 rtk를 쓰기 위한 선택 기능)는 **관리자 PowerShell**이 필요합니다. 일반 권한으로 실행하면 WSL 단계만 건너뛰고 안내 메시지를 출력합니다 — 나머지는 정상 설치됩니다.
-> - 반대로 **scoop**(supabase·pipx용)은 일반 권한에서만 정상 설치되므로, 관리자 PowerShell로 *시작*하는 것은 권장하지 않습니다.
+전체/심화 설치가 필요하면 먼저 환경 변수를 지정한 뒤 실행합니다.
+
+```powershell
+$env:SNUG_SETUP_MODE="full"
+irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
+```
 
 ### macOS
-Terminal에서 아래 한 줄 입력:
+
+Terminal을 열고 실행합니다.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash
 ```
 
-설치 시간: 인터넷 속도에 따라 5~15분 소요.
-
----
-
-## 무엇이 설치되나요?
-
-### 1. 시스템 패키지
-| 도구 | 용도 |
-|---|---|
-| Node.js (LTS) | npm 글로벌 패키지 실행 환경 |
-| Git | 버전 관리 |
-| GitHub CLI (`gh`) | GitHub 저장소·PR·이슈 관리 |
-| Python 3 | 일부 MCP 서버에서 사용 |
-| Homebrew (Mac) | Mac 패키지 매니저 |
-| jq (Mac) | JSON 파싱 |
-
-### 2. AI 및 개발 CLI (npm 글로벌)
-| 패키지 | 명령어 | 용도 |
-|---|---|---|
-| `@anthropic-ai/claude-code` | `claude` | Anthropic Claude AI CLI |
-| `@googleworkspace/cli` | `gws` | Google Sheets/Drive 등 Workspace CLI |
-| `@google/clasp` | `clasp` | Google Apps Script 도구 |
-| `firebase-tools` | `firebase` | Firebase 인증·Firestore·배포 |
-| `vercel` | `vercel` | Vercel 웹 배포 |
-| `serve` | `serve` | 로컬 정적 서버 |
-| `@playwright/test` | `playwright` | 웹 자동화·브라우저 테스트 |
-| `xlsx` | — | 엑셀(.xlsx) 파일 처리 라이브러리 |
-| `typescript` | `tsc` | TypeScript 컴파일러 |
-| `tsx` | `tsx` | TypeScript 즉시 실행 도구 |
-
-> **별도 설치 CLI(npm 아님)**: `agy`(Google Antigravity CLI — 기존 Gemini CLI 후속, 공식 install 스크립트로 설치), `supabase`(Supabase CLI — mac: brew tap / Windows: scoop). `gemini` CLI는 2026-06-18 종료 예정이라 `agy`로 교체되었습니다.
-
-### 3. Claude Code 확장
-- **MCP 서버**: `playwright`(브라우저 자동화), `chrome-devtools`(브라우저 디버깅·성능 분석), `context7`(라이브러리 공식 문서 검색), `sequential-thinking`(단계적 사고), `serena`(코드베이스 시맨틱 분석), `vercel`(배포 로그·상태 조회, 최초 1회 OAuth 인증 필요), `agentmemory`(세션 간 영속 메모리)
-- **Skill·플러그인**: `pbakaus/impeccable`(디자인 보조), `senior-frontend`(프론트엔드 코드 리뷰), `hookify`(AI 행동 hook 관리), `superpowers`(워크플로우 자동화), `caveman`(출력 압축), `document-skills`(pptx/docx/xlsx/pdf 문서 생성·편집), `agentmemory`(영속 메모리 스킬 — /recall·/remember 등)
-- **agentmemory iii 엔진**: 코딩 에이전트 영속 메모리용 백그라운드 데몬(:3111). 첫 실행 시 자동 설치(Docker·API키 불필요), 셸 시작 시 자동 기동(rc/프로필 등록)
-- **Playwright Chromium 브라우저** (약 150MB)
-
-### 4. 셸 환경
-- **Windows (PowerShell 7)**: `Tab` = 인라인 제안 수락, `→` = 다음 후보 이동
-- **macOS (zsh)**: Tab 자동완성, `cc` 별칭(=`claude --dangerously-skip-permissions`)
-
----
-
-## 설치 후 첫 단계
-
-각 도구는 처음 한 번 인증이 필요합니다:
+전체/심화 설치가 필요하면 다음처럼 실행합니다.
 
 ```bash
-gh auth login         # GitHub
-gemini                # Google 계정 로그인 안내가 표시됨
-claude                # Anthropic 계정 로그인 안내가 표시됨
-gws login             # Google Workspace
-clasp login           # Google Apps Script
-firebase login        # Firebase (사용 시)
+curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash -s -- --full
 ```
 
----
+## 설치 전 확인
 
-## 동작 원리
+원격 스크립트를 실행하기 전에 내용을 먼저 확인할 수 있습니다.
 
-### Windows
-```
-PowerShell
-  └─ bootstrap.ps1                  (irm | iex 로 받아서 실행)
-       ├─ setup.bat / setup.ps1 을 %TEMP%\snug-setup\ 로 다운로드
-       └─ setup.bat 실행
-            ├─ chcp 65001            (UTF-8 콘솔로 전환)
-            ├─ pwsh.exe 호출         (PowerShell 7 우선, 없으면 5.1)
-            └─ setup.ps1 본 설치 작업
+Windows:
+
+```powershell
+irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1
 ```
 
-> **왜 bootstrap이 필요한가?** Windows는 cmd → PowerShell 진입 시 코드페이지 전환이 필요하고, `setup.bat`이 그 역할을 담당합니다. `bootstrap.ps1`은 두 파일을 묶어 한 줄 명령어로 만들기 위한 진입점입니다.
+macOS:
 
-### macOS
-```
-Terminal
-  └─ setup.sh                       (curl | bash 로 직접 실행)
-       └─ Homebrew + brew + npm 본 설치 작업
+```bash
+curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh
 ```
 
-> Mac은 터미널이 기본 UTF-8이고 셸 환경이 일관적이라 중간 단계가 필요 없습니다.
+내용을 확인한 뒤 위의 빠른 설치 명령을 실행합니다.
 
----
+## 기본 설치 vs 전체 설치
 
-## 파일 구성
+초급 연수에서는 기본 설치만 사용해도 충분합니다.
+
+| 구분 | 도구 | 설명 |
+|---|---|---|
+| 기본 설치 | Git | 파일 변경 기록, commit |
+| 기본 설치 | GitHub CLI (`gh`) | GitHub 로그인, 저장소 생성, push |
+| 기본 설치 | Node.js LTS / npm | 웹 개발 도구 실행 |
+| 기본 설치 | Claude Code 또는 AI 코딩 도구 | AI에게 웹사이트 제작 요청 |
+| 기본 설치 | `serve` | 만든 웹사이트를 내 컴퓨터에서 확인 |
+| 선택 | Playwright | 브라우저 자동 테스트, 화면 확인 |
+| 전체/심화 | `agy` | Google Antigravity CLI |
+| 전체/심화 | `gws`, `clasp` | Google Workspace, Apps Script |
+| 전체/심화 | `firebase-tools`, `vercel`, `supabase` | 백엔드/배포 심화 도구 |
+| 전체/심화 | `xlsx`, `typescript`, `tsx` | 자료 처리와 TypeScript 개발 |
+| 전체/심화 | MCP 관련 도구, agentmemory | Claude Code 확장 기능 |
+
+## 설치 후 로그인
+
+초급 연수 필수:
+
+```bash
+gh auth login
+gh auth status
+claude
+```
+
+- `gh auth login`: GitHub 계정으로 로그인합니다.
+- `gh auth status`: GitHub 로그인이 되었는지 확인합니다.
+- `claude`: Claude Code를 처음 실행하고 로그인합니다. 다른 AI 코딩 도구를 쓰는 경우 해당 도구의 로그인 절차를 따르면 됩니다.
+
+선택/심화:
+
+```bash
+agy auth login
+gws login
+clasp login
+firebase login
+vercel login
+supabase login
+```
+
+- `agy auth login`: agy Antigravity CLI 로그인
+- `gws login`: Google Workspace CLI 로그인
+- `clasp login`: Google Apps Script CLI 로그인
+- `firebase login`: Firebase CLI 로그인
+- `vercel login`: Vercel CLI 로그인
+- `supabase login`: Supabase CLI 로그인
+
+## 설치 확인
+
+아래 명령이 버전 또는 인증 상태를 출력하면 정상입니다.
+
+```bash
+git --version
+node --version
+npm --version
+gh --version
+gh auth status
+claude --version
+```
+
+성공 상태:
+
+- `git --version`: `git version ...`이 보입니다.
+- `node --version`: `v20...` 또는 그 이상의 LTS 버전이 보입니다.
+- `npm --version`: 숫자 버전이 보입니다.
+- `gh --version`: GitHub CLI 버전이 보입니다.
+- `gh auth status`: 로그인한 GitHub 계정 정보가 보입니다.
+- `claude --version`: Claude Code 버전이 보입니다.
+
+## Git 사용자 정보 설정
+
+처음 Git을 설치한 컴퓨터에서는 commit 전에 이름과 이메일을 설정해야 합니다. 설정이 없으면 `Author identity unknown` 오류가 납니다.
+
+이미 설정되어 있는지 확인:
+
+```bash
+git config --global user.name
+git config --global user.email
+```
+
+설정하기:
+
+```bash
+git config --global user.name "홍길동"
+git config --global user.email "본인 GitHub 이메일"
+```
+
+GitHub 이메일은 GitHub 계정에 등록된 이메일을 사용합니다.
+
+## 첫 웹사이트 실행하기
+
+샘플 프로젝트가 들어 있습니다.
+
+```bash
+cd examples/basic-html-site
+npx serve .
+```
+
+화면에 표시되는 주소를 브라우저에서 열면 OX 퀴즈 예제를 볼 수 있습니다. `index.html` 파일은 서버 없이 브라우저에서 바로 열어도 동작합니다.
+
+## GitHub Pages 배포하기
+
+새 수업용 웹사이트 폴더를 만들고 `index.html` 파일을 준비합니다.
+
+```bash
+mkdir my-class-site
+cd my-class-site
+```
+
+`index.html` 파일을 만든 뒤 다음 명령을 실행합니다.
+
+```bash
+git init
+git add .
+git commit -m "첫 수업용 웹사이트 만들기"
+gh repo create my-class-site --public --source=. --remote=origin --push
+```
+
+그 다음 GitHub 웹사이트에서 설정합니다.
+
+1. Repository로 이동
+2. Settings 클릭
+3. Pages 클릭
+4. Build and deployment에서 Source를 `Deploy from a branch`로 선택
+5. Branch를 `main`, Folder를 `/root`로 선택
+6. Save 클릭
+
+주의:
+
+- GitHub Free 계정에서는 private 저장소의 Pages 사용이 제한될 수 있습니다. 연수용 저장소는 `public`으로 만드세요.
+- GitHub Pages는 인터넷에 공개되는 웹사이트입니다.
+- API 키, 개인정보, 학생 정보, 학교 내부 자료를 public 저장소에 넣지 마세요.
+
+## 자주 나는 오류
+
+### `gh auth status`에서 로그인 안 됨
+
+`gh auth login`을 다시 실행하고 GitHub 계정으로 로그인합니다.
+
+### `Author identity unknown`
+
+Git 사용자 이름과 이메일을 설정합니다.
+
+```bash
+git config --global user.name "홍길동"
+git config --global user.email "본인 GitHub 이메일"
+```
+
+### GitHub Pages가 안 보임
+
+저장소가 private인지 확인합니다. 초급 연수에서는 public 저장소를 사용합니다.
+
+### Pages 주소로 들어갔는데 404가 보임
+
+`index.html`이 저장소 루트에 있는지 확인합니다. 또는 Pages 설정에서 선택한 폴더와 실제 파일 위치가 맞는지 확인합니다.
+
+### 배포 후 바로 반영되지 않음
+
+GitHub Pages 반영에는 몇 분 정도 걸릴 수 있습니다. Pages 화면의 배포 상태를 확인한 뒤 다시 새로고침합니다.
+
+## 보안 주의사항
+
+- public 저장소에는 API 키를 올리지 않습니다.
+- 학생 이름, 학번, 이메일, 성적, 출결 등 개인정보를 올리지 않습니다.
+- 학교 내부 문서나 비공개 자료를 public 저장소에 올리지 않습니다.
+- `.env` 파일은 public 저장소에 올리지 않습니다.
+- GitHub Pages는 인터넷에 공개되는 웹사이트입니다.
+
+## 제거 방법
+
+모든 도구를 완벽히 지우는 절차는 운영체제와 설치 상태에 따라 다릅니다. 아래 명령으로 주요 도구를 제거할 수 있습니다.
+
+Windows:
+
+```powershell
+winget uninstall Git.Git
+winget uninstall GitHub.cli
+winget uninstall OpenJS.NodeJS.LTS
+npm uninstall -g @anthropic-ai/claude-code serve firebase-tools vercel @google/clasp @googleworkspace/cli
+```
+
+macOS:
+
+```bash
+brew uninstall git gh node
+npm uninstall -g @anthropic-ai/claude-code vercel firebase-tools serve @google/clasp @googleworkspace/cli
+```
+
+## 개발자/관리자 참고
+
+파일 구성:
 
 | 파일 | 역할 |
 |---|---|
-| `bootstrap.ps1` | Windows 한 줄 명령어 진입점 (`irm \| iex` 패턴) |
-| `setup.bat` | Windows cmd 진입점 (UTF-8 코드페이지 설정 + pwsh 호출) |
-| `setup.ps1` | Windows 본 설치 스크립트 (8단계) |
-| `setup.sh` | macOS 본 설치 스크립트 (8단계) |
-| `.gitattributes` | `*.sh=lf` / `*.bat,*.ps1=crlf` 강제 (Mac bash 호환) |
-| `README.md` | 본 문서 |
+| `bootstrap.ps1` | Windows 한 줄 설치 진입점 |
+| `setup.bat` | Windows UTF-8 콘솔 설정 후 `setup.ps1` 실행 |
+| `setup.ps1` | Windows 설치 스크립트 |
+| `setup.sh` | macOS 설치 스크립트 |
+| `TEACHER_GUIDE.md` | 초보 선생님용 단계별 안내 |
+| `examples/basic-html-site/` | GitHub Pages용 단일 파일 HTML 예제 |
 
----
-
-## 문제 해결
-
-### `irm` 또는 `iex` 명령을 찾을 수 없습니다 (Windows)
-PowerShell이 아닌 일반 cmd 창에서 실행한 경우입니다. 시작 메뉴 → "PowerShell" 검색 후 다시 시도하세요.
-
-### "이 시스템에서 스크립트를 실행할 수 없으므로..." (Windows)
-`bootstrap.ps1`은 내부적으로 `setup.bat`을 통해 `-ExecutionPolicy Bypass`로 실행되므로 정상 흐름에서는 발생하지 않습니다. 만약 발생하면 새 PowerShell 창에서 한 줄 명령어로 다시 실행하세요.
-
-### Mac에서 `\r: command not found` 오류
-`setup.sh`가 CRLF 줄바꿈으로 저장된 경우입니다. 본 저장소는 `.gitattributes`로 LF를 강제하므로 정상 다운로드 시 발생하지 않습니다. 발생 시:
-
-```bash
-sed -i '' 's/\r$//' setup.sh && bash setup.sh
-```
-
-### 한글이 깨져서 표시됨 (Windows)
-- 한 줄 명령어로 실행한 경우: 자동으로 `chcp 65001`이 호출되므로 정상.
-- `setup.ps1`만 직접 실행한 경우 발생 가능 → 항상 `setup.bat`(또는 한 줄 명령어)으로 시작하세요.
-
-### 권한 부족으로 일부 패키지 설치 실패
-- **Windows**: 새 PowerShell 창에서 한 줄 명령어로 다시 실행. winget이 UAC 프롬프트를 띄우면 "예"를 선택하세요. (관리자 권한으로 실행하면 scoop 설치가 우회 모드로 동작하므로 권장하지 않습니다.)
-- **macOS**: 실패한 패키지를 `sudo npm install -g <패키지명>`로 개별 재시도
-
----
-
-## 유지보수자용 메모
-
-### 도구 추가/제거 시 절차
-1. `setup.ps1`의 `$NPM_GLOBALS` 배열과 `setup.sh`의 `NPM_GLOBALS` 배열을 **양쪽 모두** 수정
-2. MCP 서버 추가 시 `Add-Mcp`(ps1) / `add_mcp`(sh) 호출을 **양쪽 모두** 추가
-3. 변경 후 커밋 + push:
-   ```bash
-   git add . && git commit -m "..." && git push
-   ```
-4. push 즉시 다음 사용자부터 한 줄 명령어로 자동 반영됨 (URL은 영구 동일)
-
-### 줄바꿈 규칙 (중요)
-- `*.sh` 파일은 **반드시 LF**로 저장. CRLF로 커밋되면 Mac bash가 `\r: command not found` 오류를 냄.
-- `.gitattributes`가 자동으로 강제하지만, 외부 편집기 사용 시 주의.
-
-### 마스터 작업 위치
-- Windows 로컬 마스터: `C:\Users\user\agent\snug-vibe-coding-setup\`
-- 그 외 위치(`G:\내 드라이브\GDagent\` 등)에 있는 사본은 참고용일 뿐 편집 대상이 아님.
-
----
-
-## 문의
-
-- 서울사대부여중 SNUG 온라인 오피스 채널
-- 내부 배포용 스크립트입니다.
+도구 추가/제거 시 `setup.ps1`과 `setup.sh`를 함께 수정하세요. macOS 스크립트는 LF 줄바꿈을 유지해야 합니다.

@@ -1,6 +1,9 @@
 # 🚦 [배포용] SNUG 온라인 오피스 바이브 코딩(AI 보조 코딩) 환경 설정 스크립트
 # 작성일: 2026-04-14 (확장 개편: 2026-04-27)
-# 용도: 동료 교사용 Claude / Gemini 기반 바이브 코딩 환경 자동 세팅 (Windows 전용)
+# 용도: 동료 교사용 Claude / AI 코딩 도구 기반 바이브 코딩 환경 자동 세팅 (Windows 전용)
+param(
+    [switch]$Full
+)
 
 # === PowerShell 7 자동 승격 ===
 # 우클릭→Windows PowerShell 5.1로 실행되더라도 자동으로 7로 재실행되도록 처리.
@@ -9,7 +12,9 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
     $pwsh = "C:\Program Files\PowerShell\7\pwsh.exe"
     if (Test-Path $pwsh) {
         Write-Host "PowerShell 7으로 다시 실행합니다..." -ForegroundColor Yellow
-        Start-Process -FilePath $pwsh -ArgumentList "-NoExit","-ExecutionPolicy","Bypass","-File","`"$PSCommandPath`""
+        $relaunchArgs = @("-NoExit","-ExecutionPolicy","Bypass","-File","`"$PSCommandPath`"")
+        if ($Full) { $relaunchArgs += "-Full" }
+        Start-Process -FilePath $pwsh -ArgumentList $relaunchArgs
         exit
     } else {
         Write-Warning "PowerShell 7이 설치되어 있지 않습니다."
@@ -25,6 +30,11 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 # 보이는 현상이 발생하므로, .NET 측 인코딩만 안전장치로 일치시킨다.
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
+
+# === 설치 모드 ===
+# 기본값은 초급 연수용 기본 설치. 심화 도구는 -Full 또는 SNUG_SETUP_MODE=full 일 때만 설치한다.
+$installMode = if ($Full -or $env:SNUG_SETUP_MODE -eq "full") { "full" } else { "basic" }
+$isFull = ($installMode -eq "full")
 
 # === 권한 체크 ===
 # 일반(비관리자) PowerShell 실행을 권장한다. winget의 머신 전역 패키지는 필요 시
@@ -63,6 +73,7 @@ function Reload-Path {
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "    SNUG 온라인 오피스 바이브 코딩 환경 설치를 시작합니다" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host "설치 모드: $installMode (basic=초급 필수, full=심화 도구 포함)"
 
 # 1. PowerShell 버전 / 인코딩 상태 확인
 Write-Host "
@@ -90,8 +101,13 @@ $nodeVer = (& node --version) 2>$null
 Write-Host "  ✓ Node.js $nodeVer 확인되었습니다." -ForegroundColor Green
 
 # 3. 보조 도구(Git, 코드 에디터, Python, gh, OpenJDK, pipx, opendataloader-pdf) 점검 및 자동 설치
-Write-Host "
+if ($isFull) {
+    Write-Host "
 [3/8] 보조 도구(Git / 에디터 / Python / gh / OpenJDK / pipx / opendataloader-pdf / uv / serena / WSL / rtk / agy / supabase) 점검 중..." -ForegroundColor Yellow
+} else {
+    Write-Host "
+[3/8] 초급 필수 도구(Git / 에디터 / gh) 점검 중..." -ForegroundColor Yellow
+}
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 winget으로 자동 설치
 if (Get-Command git -ErrorAction SilentlyContinue) {
@@ -128,15 +144,6 @@ if (-not $editorFound) {
     Write-Host "    Cursor(AI 편집기): https://cursor.com/" -ForegroundColor Cyan
 }
 
-# Python: 일부 AI 도구·MCP 서버에서 사용
-if (Get-Command python -ErrorAction SilentlyContinue) {
-    $pyVer = (& python --version) 2>$null
-    Write-Host "  ✓ Python 확인됨 ($pyVer)" -ForegroundColor Green
-} else {
-    Write-Host "  · Python은 감지되지 않았지만 필수는 아닙니다. (MCP·일부 AI 도구 사용 시 필요)" -ForegroundColor Gray
-    Write-Host "    설치 링크: https://www.python.org/downloads/" -ForegroundColor Cyan
-}
-
 # GitHub CLI(gh): GitHub 저장소·PR·이슈 관리. npm이 아닌 별도 설치 — winget으로 자동 설치 시도.
 if (Get-Command gh -ErrorAction SilentlyContinue) {
     $ghLine = (& gh --version 2>$null | Select-Object -First 1)
@@ -156,6 +163,17 @@ if (Get-Command gh -ErrorAction SilentlyContinue) {
         Write-Warning "  ✗ winget을 찾을 수 없습니다. 수동 설치가 필요합니다."
         Write-Host "    설치 링크: https://cli.github.com/" -ForegroundColor Cyan
     }
+}
+
+if ($isFull) {
+
+# Python: 일부 AI 도구·MCP 서버에서 사용
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    $pyVer = (& python --version) 2>$null
+    Write-Host "  ✓ Python 확인됨 ($pyVer)" -ForegroundColor Green
+} else {
+    Write-Host "  · Python은 감지되지 않았지만 필수는 아닙니다. (MCP·일부 AI 도구 사용 시 필요)" -ForegroundColor Gray
+    Write-Host "    설치 링크: https://www.python.org/downloads/" -ForegroundColor Cyan
 }
 
 # OpenJDK: Java 런타임 (PDF 변환 도구 opendataloader-pdf 등에 필요)
@@ -304,7 +322,7 @@ if (Get-Command rtk -ErrorAction SilentlyContinue) {
     Write-Host "    네이티브:   https://github.com/rtk-ai/rtk/releases (rtk-x86_64-pc-windows-msvc.zip)" -ForegroundColor Cyan
 }
 
-# agy: Google Antigravity CLI — 기존 Gemini CLI의 후속(2026-06-18 Gemini CLI 종료).
+# agy: Google Antigravity CLI.
 # Go 바이너리라 npm이 아닌 공식 install.ps1로 설치한다. 명령어는 'agy', 첫 실행 시 Google 로그인.
 if (Get-Command agy -ErrorAction SilentlyContinue) {
     Write-Host "  ✓ agy(Antigravity CLI) 확인됨" -ForegroundColor Green
@@ -342,17 +360,24 @@ if (Get-Command supabase -ErrorAction SilentlyContinue) {
     Write-Host "    수동: scoop bucket add supabase https://github.com/supabase/scoop-bucket.git; scoop install supabase" -ForegroundColor Cyan
 }
 
+} else {
+    Write-Host "  · 심화 도구(Python/OpenJDK/pipx/uv/serena/WSL/rtk/agy/supabase)는 기본 설치에서 건너뜁니다. 필요 시 SNUG_SETUP_MODE=full 로 다시 실행하세요." -ForegroundColor Gray
+}
+
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
 Write-Host "
 [4/8] 인공지능 / 개발 CLI 도구 설치 및 업데이트 중 (잠시만 기다려 주세요)..." -ForegroundColor Yellow
 
 # 일반 npm 글로벌 패키지 (postinstall에서 Expand-Archive를 호출하지 않는 패키지들)
-$NPM_GLOBALS = @(
+$BASIC_NPM_GLOBALS = @(
     "@anthropic-ai/claude-code@latest",   # Claude Code AI CLI (claude)
+    "serve@latest"                        # 로컬 정적 서버 (serve)
+)
+
+$FULL_NPM_GLOBALS = @(
     "@google/clasp@latest",               # Google Apps Script 도구 (clasp)
     "firebase-tools@latest",              # Firebase 인증·Firestore·배포 (firebase)
     "vercel@latest",                      # Vercel 웹 배포 (vercel)
-    "serve@latest",                       # 로컬 정적 서버 (serve)
     "@playwright/test@latest",            # 웹 자동화·브라우저 테스트
     "xlsx@latest",                        # 엑셀(.xlsx) 파일 처리 라이브러리
     "typescript@latest",                  # TypeScript 컴파일러 (tsc)
@@ -361,6 +386,11 @@ $NPM_GLOBALS = @(
     "repomix@latest",                     # Repomix — AI 친화적 코드베이스 패킹 도구
     "@agentmemory/agentmemory@latest"     # agentmemory — 코딩 에이전트 영속 메모리(iii 엔진 자동설치)
 )
+
+$NPM_GLOBALS = @($BASIC_NPM_GLOBALS)
+if ($isFull) {
+    $NPM_GLOBALS += $FULL_NPM_GLOBALS
+}
 
 foreach ($pkg in $NPM_GLOBALS) {
     Write-Host "  > $pkg 설치 중..."
@@ -375,30 +405,40 @@ foreach ($pkg in $NPM_GLOBALS) {
 # @googleworkspace/cli (gws) 는 postinstall에서 Expand-Archive(Write-Progress)를 호출해
 # 콘솔 VT 상태를 깨뜨리고 그 결과 한글 출력이 두 글자씩 겹쳐 보이는 렌더 버그를 유발한다.
 # → 출력을 로그 파일로 리다이렉트하여 진행률 바가 콘솔에 직접 그려지지 않게 한다.
-Write-Host "  > @googleworkspace/cli@latest 설치 중... (gws CLI, 진행 상황은 로그 파일로 기록)"
-$gwsLog = Join-Path $env:TEMP "snug-setup-gws-install.log"
-npm install -g "@googleworkspace/cli@latest" --silent *>> $gwsLog
-if ($?) {
-    Write-Host "    - @googleworkspace/cli 설치 성공 (로그: $gwsLog)" -ForegroundColor Gray
+if ($isFull) {
+    Write-Host "  > @googleworkspace/cli@latest 설치 중... (gws CLI, 진행 상황은 로그 파일로 기록)"
+    $gwsLog = Join-Path $env:TEMP "snug-setup-gws-install.log"
+    npm install -g "@googleworkspace/cli@latest" --silent *>> $gwsLog
+    if ($?) {
+        Write-Host "    - @googleworkspace/cli 설치 성공 (로그: $gwsLog)" -ForegroundColor Gray
+    } else {
+        Write-Warning "    - @googleworkspace/cli 설치 실패. 로그 확인: $gwsLog"
+    }
 } else {
-    Write-Warning "    - @googleworkspace/cli 설치 실패. 로그 확인: $gwsLog"
+    Write-Host "  · gws/clasp/firebase/vercel/supabase/xlsx/typescript/tsx/MCP/agentmemory 계열은 기본 설치에서 건너뜁니다." -ForegroundColor Gray
 }
 
 # 5. Playwright 브라우저 바이너리 설치 (웹 자동화·스크린샷용)
 Write-Host "
 [5/8] Playwright 브라우저(Chromium) 설치 중..." -ForegroundColor Yellow
 Write-Host "  (웹 자동화/스크린샷에 사용. 약 150MB 다운로드)" -ForegroundColor Gray
-npx --yes playwright install chromium
-if ($?) {
-    Write-Host "  Playwright 브라우저 설치 완료" -ForegroundColor Green
+if ($isFull) {
+    npx --yes playwright install chromium *> $null
+    if ($?) {
+        Write-Host "  Playwright 브라우저 설치 완료" -ForegroundColor Green
+    } else {
+        Write-Warning "  Playwright 브라우저 설치 중 오류가 발생했습니다. 전체 설치는 계속 진행합니다."
+    }
 } else {
-    Write-Warning "  Playwright 브라우저 설치 중 오류가 발생했습니다."
+    Write-Host "  · 기본 설치에서는 Playwright 브라우저 다운로드를 건너뜁니다. 필요 시 SNUG_SETUP_MODE=full 로 다시 실행하세요." -ForegroundColor Gray
 }
 
 # 6. Claude Code MCP 서버 추가 (Claude의 능력을 확장하는 외부 도구들)
 Write-Host "
 [6/8] Claude Code MCP 서버 추가 중..." -ForegroundColor Yellow
-if (Get-Command claude -ErrorAction SilentlyContinue) {
+if (-not $isFull) {
+    Write-Host "  · MCP 서버 등록은 전체/심화 설치에서만 진행합니다. 필요 시 SNUG_SETUP_MODE=full 로 다시 실행하세요." -ForegroundColor Gray
+} elseif (Get-Command claude -ErrorAction SilentlyContinue) {
     $mcpList = (claude mcp list 2>$null) | Out-String
     function Add-Mcp {
         param([string]$Name, [string]$Cmd, [string]$Desc)
@@ -444,6 +484,9 @@ Write-Host "
 [7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / agentmemory) 설치 중..." -ForegroundColor Yellow
 Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성 + 영속 메모리)" -ForegroundColor Gray
 
+if (-not $isFull) {
+    Write-Host "  · Claude Code 추가 스킬·플러그인은 전체/심화 설치에서만 진행합니다. 필요 시 SNUG_SETUP_MODE=full 로 다시 실행하세요." -ForegroundColor Gray
+} else {
 npx --yes skills add pbakaus/impeccable
 if ($?) { Write-Host "  ✓ impeccable 스킬 설치 완료" -ForegroundColor Green }
 else { Write-Warning "  ✗ impeccable 스킬 설치 실패 (Claude Code 로그인 후 재시도)" }
@@ -535,6 +578,7 @@ if ((Get-Command agentmemory -ErrorAction SilentlyContinue) -and (Get-Command cl
 } else {
     Write-Warning "  agentmemory 또는 claude 명령을 찾을 수 없어 agentmemory 연동을 건너뜁니다."
 }
+}
 
 # 8. PowerShell 7 프로필에 PSReadLine 자동완성 키 등록
 # Tab → AcceptSuggestion (인라인 회색 제안 즉시 수락)
@@ -554,7 +598,7 @@ $profileContent = Get-Content $profilePath -Raw -ErrorAction SilentlyContinue
 if ($profileContent -notmatch "AcceptSuggestion") {
     $bindBlock = @"
 
-# === [setup_distribution] PSReadLine 자동완성 키 (PowerShell 7 전용) ===
+# === [setup.ps1] PSReadLine 자동완성 키 (PowerShell 7 전용) ===
 if (`$PSVersionTable.PSVersion.Major -ge 7) {
     Set-PSReadLineKeyHandler -Key Tab -Function AcceptSuggestion
     Set-PSReadLineKeyHandler -Key RightArrow -Function TabCompleteNext
@@ -570,7 +614,7 @@ if (`$PSVersionTable.PSVersion.Major -ge 7) {
 if ($profileContent -notmatch "function cc") {
     $ccBlock = @"
 
-# === [setup_distribution] cc 단축 별칭: claude --dangerously-skip-permissions ===
+# === [setup.ps1] cc 단축 별칭: claude --dangerously-skip-permissions ===
 function cc { claude --dangerously-skip-permissions @args }
 "@
     Add-Content -Path $profilePath -Value $ccBlock -Encoding utf8
@@ -581,10 +625,12 @@ function cc { claude --dangerously-skip-permissions @args }
 
 # agentmemory 엔진 자동기동: 영속 메모리는 iii 엔진(:3111) 상시 실행이 필요.
 # 새 PowerShell 창을 열 때 엔진이 안 떠 있으면 숨김 창으로 백그라운드 시작.
-if ($profileContent -notmatch "agentmemory 엔진") {
+if (-not $isFull) {
+    Write-Host "  · agentmemory 엔진 자동기동은 기본 설치에서 건너뜁니다." -ForegroundColor Gray
+} elseif ($profileContent -notmatch "agentmemory 엔진") {
     $amBlock = @"
 
-# === [setup_distribution] agentmemory 엔진 자동기동 (영속 메모리) ===
+# === [setup.ps1] agentmemory 엔진 자동기동 (영속 메모리) ===
 if (Get-Command agentmemory -ErrorAction SilentlyContinue) {
     `$amUp = `$false
     try { Invoke-RestMethod -Uri http://localhost:3111/agentmemory/livez -TimeoutSec 1 -ErrorAction Stop | Out-Null; `$amUp = `$true } catch {}
@@ -603,16 +649,15 @@ Write-Host " 🎉 모든 필수 도구 설치가 완료되었습니다!" -Foregr
 Write-Host "==========================================================" -ForegroundColor Green
 Write-Host "
 [다음 단계 안내]"
-Write-Host "1. 'agy' 또는 'claude' 명령어로 AI 대화를 시작하세요. (agy는 기존 gemini CLI의 후속 — 첫 실행: 'agy auth login')"
-Write-Host "2. 'gws login' / 'clasp login' 으로 구글 워크스페이스 인증을 완료하세요."
-Write-Host "3. 'firebase login' / 'supabase login' 으로 백엔드(Firebase·Supabase) 인증을 완료하세요. (사용 시)"
-Write-Host "4. 'gh auth login' 으로 GitHub 인증을 완료하세요. (GitHub 저장소 사용 시)"
-Write-Host "5. 새 PowerShell 7 창을 열어야 자동완성 키(Tab/→)가 적용됩니다."
-Write-Host "6. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-Write-Host "7. Claude 시작 후 '/mcp' 로 등록된 MCP 서버(playwright/chrome-devtools/context7/sequential-thinking/serena/vercel/agentmemory) 동작을 확인하세요."
+Write-Host "1. 초급 필수: 'gh auth login' 후 'gh auth status'로 GitHub 인증을 확인하세요."
+Write-Host "2. 'claude' 명령어로 AI 대화를 시작하세요."
+Write-Host "3. 선택/심화: 'agy auth login', 'gws login', 'clasp login', 'firebase login', 'vercel login', 'supabase login'을 필요한 도구만 실행하세요."
+Write-Host "4. 새 PowerShell 7 창을 열어야 자동완성 키(Tab/→)가 적용됩니다."
+Write-Host "5. 전체/심화 설치를 했다면 Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
+Write-Host "6. 전체/심화 설치를 했다면 Claude 시작 후 '/mcp' 로 등록된 MCP 서버 동작을 확인하세요."
 Write-Host "   (vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)" -ForegroundColor Cyan
 Write-Host "   (agentmemory 영속 메모리: 새 PowerShell 창을 열면 엔진이 자동 기동됩니다. 'agentmemory status'로 확인)" -ForegroundColor Cyan
-Write-Host "8. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
+Write-Host "7. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."
 Write-Host "
 아무 키나 누르면 창이 닫힙니다..."
 pause

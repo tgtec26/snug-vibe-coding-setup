@@ -53,7 +53,7 @@ echo  [1/2] Unblocking script file...
 REM === 2) Run installer with bypassed execution policy ===
 echo  [2/2] Running setup.ps1 ...
 echo.
-%PS% -NoProfile -ExecutionPolicy Bypass -File "setup.ps1"
+%PS% -NoProfile -ExecutionPolicy Bypass -File "setup.ps1" %*
 
 echo.
 echo ============================================================
