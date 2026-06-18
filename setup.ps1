@@ -481,7 +481,7 @@ if (-not $isFull) {
 # pbakaus/impeccable: 디자인 보조 스킬 모음 (frontend-design, polish, delight, animate, audit 등)
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 Write-Host "
-[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / agentmemory) 설치 중..." -ForegroundColor Yellow
+[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / understand-anything / agentmemory) 설치 중..." -ForegroundColor Yellow
 Write-Host "  (UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성 + 영속 메모리)" -ForegroundColor Gray
 
 if (-not $isFull) {
@@ -554,6 +554,21 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
     }
 } else {
     Write-Host "  claude 명령을 찾을 수 없어 caveman 설치를 건너뜁니다." -ForegroundColor Yellow
+}
+
+# understand-anything: 코드베이스 분석 → 인터랙티브 지식 그래프 생성 (Egonex-AI/Understand-Anything)
+# /understand 로 아키텍처·컴포넌트·관계를 분석하고 /understand-dashboard 로 시각화한다.
+Write-Host "  > understand-anything 플러그인 설치 중... (Egonex-AI/Understand-Anything)"
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    claude plugin marketplace add Egonex-AI/Understand-Anything
+    try {
+        claude plugin install understand-anything@understand-anything
+        Write-Host "  ✓ understand-anything 플러그인 설치 완료" -ForegroundColor Green
+    } catch {
+        Write-Warning "  ✗ understand-anything 설치 실패. 수동: claude plugin marketplace add Egonex-AI/Understand-Anything; claude plugin install understand-anything@understand-anything"
+    }
+} else {
+    Write-Host "  claude 명령을 찾을 수 없어 understand-anything 설치를 건너뜁니다." -ForegroundColor Yellow
 }
 
 # agentmemory: 코딩 에이전트 영속 메모리 (세션 간 컨텍스트 기억)

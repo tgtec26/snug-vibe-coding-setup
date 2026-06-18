@@ -420,7 +420,7 @@ fi
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 # ============================================================
 echo ""
-echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / agentmemory) 설치 중...${NC}"
+echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / understand-anything / agentmemory) 설치 중...${NC}"
 echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성 + 영속 메모리)${NC}"
 
 if ! $IS_FULL; then
@@ -496,6 +496,20 @@ if command -v claude &>/dev/null; then
   fi
 else
   echo "  ${YELLOW}claude 명령을 찾을 수 없어 caveman 설치를 건너뜁니다.${NC}"
+fi
+
+# understand-anything: 코드베이스 분석 → 인터랙티브 지식 그래프 생성 (Egonex-AI/Understand-Anything)
+# /understand 로 아키텍처·컴포넌트·관계를 분석하고 /understand-dashboard 로 시각화한다.
+echo "  > understand-anything 플러그인 설치 중... (Egonex-AI/Understand-Anything)"
+if command -v claude &>/dev/null; then
+  claude plugin marketplace add Egonex-AI/Understand-Anything 2>&1 || true
+  if claude plugin install understand-anything@understand-anything 2>&1; then
+    echo "  ${GREEN}✓ understand-anything 플러그인 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ understand-anything 설치 실패. 수동: claude plugin marketplace add Egonex-AI/Understand-Anything && claude plugin install understand-anything@understand-anything${NC}"
+  fi
+else
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 understand-anything 설치를 건너뜁니다.${NC}"
 fi
 
 # agentmemory: 코딩 에이전트 영속 메모리 (세션 간 컨텍스트 기억)
