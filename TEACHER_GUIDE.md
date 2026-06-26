@@ -2,7 +2,7 @@
 
 ## 1) 이 저장소의 목적
 
-이 저장소는 선생님이 AI 코딩 도구로 수업용 인터랙티브 웹사이트를 만들고 GitHub Pages에 공개할 수 있도록 컴퓨터를 준비해 줍니다. 초급 연수에서는 Git, GitHub CLI, Node.js, Claude Code 또는 AI 코딩 도구, GitHub 인증만 준비해도 충분합니다.
+이 저장소는 선생님이 AI 코딩 도구로 수업용 인터랙티브 웹사이트를 만들고 GitHub Pages에 공개할 수 있도록 컴퓨터를 준비해 줍니다. Git, GitHub CLI, Node.js, Claude Code 또는 AI 코딩 도구, GitHub 인증을 포함한 모든 도구를 한 번에 설치합니다.
 
 ## 2) 설치 전 준비
 
@@ -26,26 +26,11 @@ macOS Terminal:
 curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash
 ```
 
-전체/심화 도구가 필요할 때만 사용합니다.
-
-Windows:
-
-```powershell
-$env:SNUG_SETUP_MODE="full"
-irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
-```
-
-macOS:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash -s -- --full
-```
-
 설치가 중간에 실패해도 같은 명령을 다시 실행해도 됩니다.
 
 ## 4) 로그인하기
 
-초급 필수:
+필수:
 
 ```bash
 gh auth login
@@ -53,7 +38,7 @@ gh auth status
 claude
 ```
 
-선택 도구 로그인:
+추가 도구 로그인:
 
 ```bash
 agy auth login
@@ -64,7 +49,7 @@ vercel login
 supabase login
 ```
 
-초급 연수에서는 선택 도구를 모두 로그인할 필요가 없습니다.
+추가 도구는 실제로 쓰는 것만 로그인하면 됩니다.
 
 ## 5) 설치 확인하기
 

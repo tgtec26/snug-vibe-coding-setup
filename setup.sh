@@ -21,20 +21,7 @@ GRAY=$'\033[0;90m'
 NC=$'\033[0m'
 
 # === 설치 모드 ===
-# 기본값은 초급 연수용 기본 설치. 심화 도구는 --full 또는 SNUG_SETUP_MODE=full 일 때만 설치한다.
-INSTALL_MODE="${SNUG_SETUP_MODE:-basic}"
-for arg in "$@"; do
-  case "$arg" in
-    --full) INSTALL_MODE="full" ;;
-    --basic) INSTALL_MODE="basic" ;;
-  esac
-done
-if [[ "$INSTALL_MODE" == "full" ]]; then
-  IS_FULL=true
-else
-  IS_FULL=false
-  INSTALL_MODE="basic"
-fi
+# 기본/심화 구분 없이 항상 모든 도구를 설치한다.
 
 # === macOS 환경 확인 ===
 if [[ "$(uname -s)" != "Darwin" ]]; then
@@ -45,7 +32,7 @@ fi
 echo "${CYAN}==========================================================${NC}"
 echo "${CYAN}    SNUG 온라인 오피스 바이브 코딩 환경 설치를 시작합니다${NC}"
 echo "${CYAN}==========================================================${NC}"
-echo "설치 모드: ${INSTALL_MODE} (basic=초급 필수, full=심화 도구 포함)"
+echo "전체 도구를 설치합니다."
 
 # ============================================================
 # 1. 셸 / Homebrew 점검
@@ -101,11 +88,7 @@ echo "  ${GREEN}✓ Node.js ${NODE_VER} 확인되었습니다.${NC}"
 # 3. 보조 도구(Git / 코드 에디터 / Python / gh / jq) 점검 및 자동 설치
 # ============================================================
 echo ""
-if $IS_FULL; then
-  echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena / rtk / agy / supabase) 점검 중...${NC}"
-else
-  echo "${YELLOW}[3/8] 초급 필수 도구(Git / 에디터 / gh) 점검 중...${NC}"
-fi
+echo "${YELLOW}[3/8] 보조 도구(Git / 에디터 / Python / gh / jq / OpenJDK / pipx / opendataloader-pdf / uv / serena / rtk / agy / supabase) 점검 중...${NC}"
 
 # Git: 버전 관리 / GitHub 연동에 필수 — 미설치 시 brew로 자동 설치
 if command -v git &>/dev/null; then
@@ -149,7 +132,6 @@ else
   fi
 fi
 
-if $IS_FULL; then
 # Python: 일부 AI 도구·MCP 서버에서 사용
 if command -v python3 &>/dev/null; then
   echo "  ${GREEN}✓ Python 확인됨 ($(python3 --version))${NC}"
@@ -304,9 +286,6 @@ else
     fi
   fi
 fi
-else
-  echo "  ${GRAY}· 심화 도구(jq/OpenJDK/pipx/uv/serena/rtk/agy/supabase)는 기본 설치에서 건너뜁니다. 필요 시 --full 로 다시 실행하세요.${NC}"
-fi
 
 # ============================================================
 # 4. 인공지능 및 개발 도구 자동 설치 (Global npm Packages)
@@ -333,10 +312,7 @@ FULL_NPM_GLOBALS=(
   "@agentmemory/agentmemory@latest"    # agentmemory — 코딩 에이전트 영속 메모리(iii 엔진 자동설치)
 )
 
-NPM_GLOBALS=("${BASIC_NPM_GLOBALS[@]}")
-if $IS_FULL; then
-  NPM_GLOBALS+=("${FULL_NPM_GLOBALS[@]}")
-fi
+NPM_GLOBALS=("${BASIC_NPM_GLOBALS[@]}" "${FULL_NPM_GLOBALS[@]}")
 
 for pkg in "${NPM_GLOBALS[@]}"; do
   echo "  > $pkg 설치 중..."
@@ -354,14 +330,10 @@ done
 echo ""
 echo "${YELLOW}[5/8] Playwright 브라우저(Chromium) 설치 중...${NC}"
 echo "  ${GRAY}(웹 자동화/스크린샷에 사용. 약 150MB 다운로드)${NC}"
-if $IS_FULL; then
-  if npx --yes playwright install chromium >/dev/null 2>&1; then
-    echo "  ${GREEN}✓ Playwright 브라우저 설치 완료${NC}"
-  else
-    echo "  ${YELLOW}✗ Playwright 브라우저 설치 중 오류가 발생했습니다. 전체 설치는 계속 진행합니다.${NC}"
-  fi
+if npx --yes playwright install chromium >/dev/null 2>&1; then
+  echo "  ${GREEN}✓ Playwright 브라우저 설치 완료${NC}"
 else
-  echo "  ${GRAY}· 기본 설치에서는 Playwright 브라우저 다운로드를 건너뜁니다. 필요 시 --full 로 다시 실행하세요.${NC}"
+  echo "  ${YELLOW}✗ Playwright 브라우저 설치 중 오류가 발생했습니다. 전체 설치는 계속 진행합니다.${NC}"
 fi
 
 # ============================================================
@@ -370,9 +342,7 @@ fi
 echo ""
 echo "${YELLOW}[6/8] Claude Code MCP 서버 추가 중...${NC}"
 
-if ! $IS_FULL; then
-  echo "  ${GRAY}· MCP 서버 등록은 전체/심화 설치에서만 진행합니다. 필요 시 --full 로 다시 실행하세요.${NC}"
-elif command -v claude &>/dev/null; then
+if command -v claude &>/dev/null; then
   MCP_LIST=$(claude mcp list 2>/dev/null || echo "")
 
   add_mcp() {
@@ -420,12 +390,9 @@ fi
 # senior-frontend: 시니어 프론트엔드 엔지니어 관점의 코드 리뷰/제안 스킬
 # ============================================================
 echo ""
-echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / understand-anything / agentmemory) 설치 중...${NC}"
+echo "${YELLOW}[7/8] Claude Code 추가 스킬·플러그인(impeccable / senior-frontend / hookify / superpowers / caveman / document-skills / understand-anything / ponytail / agentmemory) 설치 중...${NC}"
 echo "  ${GRAY}(UI/UX 품질·프론트엔드 코드 품질 + AI 행동 hook 관리 + 워크플로우 자동화 + 출력 압축 + 문서(pptx/docx/xlsx/pdf) 생성 + 영속 메모리)${NC}"
 
-if ! $IS_FULL; then
-  echo "  ${GRAY}· Claude Code 추가 스킬·플러그인은 전체/심화 설치에서만 진행합니다. 필요 시 --full 로 다시 실행하세요.${NC}"
-else
 if npx --yes skills add pbakaus/impeccable </dev/null; then
   echo "  ${GREEN}✓ impeccable 스킬 설치 완료${NC}"
 else
@@ -512,6 +479,20 @@ else
   echo "  ${YELLOW}claude 명령을 찾을 수 없어 understand-anything 설치를 건너뜁니다.${NC}"
 fi
 
+# ponytail: AI 에이전트가 최소·효율 코드를 작성하도록 강제하는 플러그인 (DietrichGebert/ponytail)
+# "안 쓴 코드가 최고의 코드" — 코드 생성 전 결정 사다리로 불필요한 코드를 줄인다.
+echo "  > ponytail 플러그인 설치 중... (DietrichGebert/ponytail)"
+if command -v claude &>/dev/null; then
+  claude plugin marketplace add DietrichGebert/ponytail 2>&1 || true
+  if claude plugin install ponytail@ponytail 2>&1; then
+    echo "  ${GREEN}✓ ponytail 플러그인 설치 완료${NC}"
+  else
+    echo "  ${YELLOW}✗ ponytail 설치 실패. 수동: claude plugin marketplace add DietrichGebert/ponytail && claude plugin install ponytail@ponytail${NC}"
+  fi
+else
+  echo "  ${YELLOW}claude 명령을 찾을 수 없어 ponytail 설치를 건너뜁니다.${NC}"
+fi
+
 # agentmemory: 코딩 에이전트 영속 메모리 (세션 간 컨텍스트 기억)
 # - npm 패키지(@agentmemory/agentmemory)는 [4/8]에서 설치됨 → 'agentmemory connect' 로 MCP 연동
 # - 8개 스킬(/recall, /remember, /handoff 등)은 plugin 마켓플레이스(rohitg00/agentmemory)로 설치
@@ -529,7 +510,6 @@ if command -v agentmemory &>/dev/null && command -v claude &>/dev/null; then
   fi
 else
   echo "  ${YELLOW}agentmemory 또는 claude 명령을 찾을 수 없어 agentmemory 연동을 건너뜁니다.${NC}"
-fi
 fi
 
 # ============================================================
@@ -558,9 +538,7 @@ fi
 
 # (1-1) agentmemory 엔진 자동기동: 영속 메모리는 iii 엔진(:3111) 상시 실행이 필요.
 # 터미널 열 때 엔진이 안 떠 있으면 백그라운드로 시작한다(비차단 — 셸 시작 지연 없음).
-if ! $IS_FULL; then
-  echo "  ${GRAY}· agentmemory 엔진 자동기동은 기본 설치에서 건너뜁니다.${NC}"
-elif grep -q "setup.sh] agentmemory 엔진" "$SHELL_RC" 2>/dev/null; then
+if grep -q "setup.sh] agentmemory 엔진" "$SHELL_RC" 2>/dev/null; then
   echo "  ${GRAY}· agentmemory 엔진 자동기동 이미 등록됨${NC}"
 else
   {
@@ -632,14 +610,14 @@ echo "${GREEN} 🎉 모든 필수 도구 설치가 완료되었습니다!${NC}"
 echo "${GREEN}==========================================================${NC}"
 echo ""
 echo "[다음 단계 안내]"
-echo "1. 초급 필수: 'gh auth login' 후 'gh auth status'로 GitHub 인증을 확인하세요."
+echo "1. 'gh auth login' 후 'gh auth status'로 GitHub 인증을 확인하세요."
 echo "2. 'claude' 명령어로 AI 대화를 시작하세요."
 echo "   (또는 'cc' — claude 권한 스킵 모드 단축키)"
-echo "3. 선택/심화: 'agy auth login', 'gws login', 'clasp login', 'firebase login', 'vercel login', 'supabase login'을 필요한 도구만 실행하세요."
+echo "3. 'agy auth login', 'gws login', 'clasp login', 'firebase login', 'vercel login', 'supabase login'을 필요한 도구만 실행하세요."
 echo "4. 새 터미널 창을 열어야 alias cc / 자동완성 설정이 적용됩니다."
 echo "   ${CYAN}또는 즉시 적용: source $SHELL_RC${NC}"
-echo "5. 전체/심화 설치를 했다면 Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
-echo "6. 전체/심화 설치를 했다면 Claude 시작 후 '/mcp' 로 등록된 MCP 서버 동작을 확인하세요."
+echo "5. Claude Code 안에서 '/teach-impeccable'을 실행해 디자인 스킬을 활성화하세요."
+echo "6. Claude 시작 후 '/mcp' 로 등록된 MCP 서버 동작을 확인하세요."
 echo "   ${CYAN}(vercel MCP는 '/mcp'에서 최초 1회 OAuth 로그인이 필요합니다)${NC}"
 echo "   ${CYAN}(agentmemory 영속 메모리: 새 터미널을 열면 엔진이 자동 기동됩니다. 'agentmemory status'로 확인)${NC}"
 echo "7. 궁금한 점은 SNUG 온라인 오피스 채널에 문의해 주세요."

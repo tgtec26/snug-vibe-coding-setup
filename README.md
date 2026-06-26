@@ -4,9 +4,9 @@
 
 ## 이 저장소는 무엇인가?
 
-- Windows와 macOS에서 기본 개발 도구를 설치합니다.
+- Windows와 macOS에서 개발 도구를 설치합니다.
 - GitHub 인증, Git 사용자 정보 설정, 첫 정적 웹사이트 실행, GitHub Pages 배포 흐름을 안내합니다.
-- 초급 연수에서는 꼭 필요한 도구만 설치하고, 심화 도구는 선택으로 분리합니다.
+- 기본/심화 구분 없이 모든 도구를 한 번에 설치합니다.
 
 ## 누구를 위한 것인가?
 
@@ -26,25 +26,12 @@ PowerShell을 열고 실행합니다. 관리자 권한으로 시작하지 않아
 irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
 ```
 
-전체/심화 설치가 필요하면 먼저 환경 변수를 지정한 뒤 실행합니다.
-
-```powershell
-$env:SNUG_SETUP_MODE="full"
-irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
-```
-
 ### macOS
 
 Terminal을 열고 실행합니다.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash
-```
-
-전체/심화 설치가 필요하면 다음처럼 실행합니다.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash -s -- --full
 ```
 
 ## 설치 전 확인
@@ -65,27 +52,27 @@ curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-set
 
 내용을 확인한 뒤 위의 빠른 설치 명령을 실행합니다.
 
-## 기본 설치 vs 전체 설치
+## 설치되는 도구
 
-초급 연수에서는 기본 설치만 사용해도 충분합니다.
+아래 도구가 모두 한 번에 설치됩니다.
 
-| 구분 | 도구 | 설명 |
-|---|---|---|
-| 기본 설치 | Git | 파일 변경 기록, commit |
-| 기본 설치 | GitHub CLI (`gh`) | GitHub 로그인, 저장소 생성, push |
-| 기본 설치 | Node.js LTS / npm | 웹 개발 도구 실행 |
-| 기본 설치 | Claude Code 또는 AI 코딩 도구 | AI에게 웹사이트 제작 요청 |
-| 기본 설치 | `serve` | 만든 웹사이트를 내 컴퓨터에서 확인 |
-| 선택 | Playwright | 브라우저 자동 테스트, 화면 확인 |
-| 전체/심화 | `agy` | Google Antigravity CLI |
-| 전체/심화 | `gws`, `clasp` | Google Workspace, Apps Script |
-| 전체/심화 | `firebase-tools`, `vercel`, `supabase` | 백엔드/배포 심화 도구 |
-| 전체/심화 | `xlsx`, `typescript`, `tsx` | 자료 처리와 TypeScript 개발 |
-| 전체/심화 | MCP 관련 도구, agentmemory | Claude Code 확장 기능 |
+| 도구 | 설명 |
+|---|---|
+| Git | 파일 변경 기록, commit |
+| GitHub CLI (`gh`) | GitHub 로그인, 저장소 생성, push |
+| Node.js LTS / npm | 웹 개발 도구 실행 |
+| Claude Code 또는 AI 코딩 도구 | AI에게 웹사이트 제작 요청 |
+| `serve` | 만든 웹사이트를 내 컴퓨터에서 확인 |
+| Playwright | 브라우저 자동 테스트, 화면 확인 |
+| `agy` | Google Antigravity CLI |
+| `gws`, `clasp` | Google Workspace, Apps Script |
+| `firebase-tools`, `vercel`, `supabase` | 백엔드/배포 도구 |
+| `xlsx`, `typescript`, `tsx` | 자료 처리와 TypeScript 개발 |
+| MCP 관련 도구, agentmemory | Claude Code 확장 기능 |
 
 ## 설치 후 로그인
 
-초급 연수 필수:
+필수:
 
 ```bash
 gh auth login
@@ -97,7 +84,7 @@ claude
 - `gh auth status`: GitHub 로그인이 되었는지 확인합니다.
 - `claude`: Claude Code를 처음 실행하고 로그인합니다. 다른 AI 코딩 도구를 쓰는 경우 해당 도구의 로그인 절차를 따르면 됩니다.
 
-선택/심화:
+추가 도구 로그인(필요한 것만):
 
 ```bash
 agy auth login
