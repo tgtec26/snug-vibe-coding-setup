@@ -35,6 +35,24 @@ if not exist "setup.ps1" (
 echo  Target script: %CD%\setup.ps1
 echo.
 
+REM === Ensure winget (App Installer) is available ===
+REM Everything below (PowerShell 7, Node, Git, ...) is installed via winget,
+REM so it must exist first. ensure-winget.ps1 runs under Windows PowerShell
+REM 5.1 (always present) and installs the App Installer package if missing.
+echo  [PRE] Checking winget (App Installer)...
+where winget >nul 2>nul && goto winget_ok
+if not exist "ensure-winget.ps1" goto winget_ok
+powershell -NoProfile -ExecutionPolicy Bypass -File "ensure-winget.ps1"
+if errorlevel 1 (
+    echo.
+    echo  [ERROR] winget is required but is not installed. See the message above.
+    echo.
+    pause
+    exit /b 1
+)
+:winget_ok
+echo.
+
 REM === Ensure PowerShell 7 (install via winget if missing) ===
 REM setup.ps1 requires PS 7+. Install it here so cmd / PowerShell 5.1 users
 REM do not have to do it manually.

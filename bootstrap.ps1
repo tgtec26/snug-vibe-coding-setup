@@ -15,9 +15,10 @@ $base = 'https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main'
 $dir  = Join-Path $env:TEMP 'snug-setup'
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 
-Write-Host '[bootstrap] Downloading setup.bat / setup.ps1 ...' -ForegroundColor Cyan
+Write-Host '[bootstrap] Downloading setup.bat / setup.ps1 / ensure-winget.ps1 ...' -ForegroundColor Cyan
 Invoke-WebRequest -UseBasicParsing -Uri "$base/setup.bat" -OutFile (Join-Path $dir 'setup.bat')
 Invoke-WebRequest -UseBasicParsing -Uri "$base/setup.ps1" -OutFile (Join-Path $dir 'setup.ps1')
+Invoke-WebRequest -UseBasicParsing -Uri "$base/ensure-winget.ps1" -OutFile (Join-Path $dir 'ensure-winget.ps1')
 
 Write-Host '[bootstrap] Launching setup.bat ...' -ForegroundColor Cyan
 & (Join-Path $dir 'setup.bat')
