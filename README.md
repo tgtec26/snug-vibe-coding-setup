@@ -20,6 +20,15 @@
 
 ### Windows
 
+**방법 A — 더블 클릭 (명령어 입력 없음, 가장 쉬움)**
+
+[`install.bat`](install.bat) 파일 하나만 내려받아 더블 클릭하면 설치가 자동으로 진행됩니다. git clone이나 명령어 입력이 필요 없습니다.
+
+- 다운로드한 파일을 더블 클릭하면 "Windows의 PC 보호" 또는 "보안 경고"가 뜰 수 있습니다 → **추가 정보 → 실행**을 누르세요.
+- 설치 중 winget 권한 창(UAC)이 뜨면 **예**를 누르세요.
+
+**방법 B — PowerShell 한 줄 명령**
+
 PowerShell을 열고 실행합니다. 관리자 권한으로 시작하지 않아도 됩니다.
 
 ```powershell
@@ -249,6 +258,7 @@ npm uninstall -g @anthropic-ai/claude-code vercel firebase-tools serve @google/c
 
 | 파일 | 역할 |
 |---|---|
+| `install.bat` | Windows 더블 클릭 설치 진입점 (clone 불필요) |
 | `bootstrap.ps1` | Windows 한 줄 설치 진입점 |
 | `setup.bat` | Windows UTF-8 콘솔 설정 후 `setup.ps1` 실행 |
 | `setup.ps1` | Windows 설치 스크립트 |
