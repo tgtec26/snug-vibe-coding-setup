@@ -27,7 +27,7 @@ echo  Downloading setup from GitHub and starting install...
 echo  (This can take a few minutes. Please keep this window open.)
 echo.
 
-set "URL=https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1"
+set "URL=https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main/bootstrap.ps1"
 
 REM Use Windows PowerShell 5.1 (always present) to bootstrap.
 REM setup.bat installs PowerShell 7 later if needed.

@@ -17,13 +17,13 @@
 Windows PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
+irm https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
 ```
 
 macOS Terminal:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main/setup.sh | bash
 ```
 
 설치가 중간에 실패해도 같은 명령을 다시 실행해도 됩니다.

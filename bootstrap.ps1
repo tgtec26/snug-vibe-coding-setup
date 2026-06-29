@@ -11,7 +11,7 @@
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = 'Tls12'
 
-$base = 'https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main'
+$base = 'https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main'
 $dir  = Join-Path $env:TEMP 'snug-setup'
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 

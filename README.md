@@ -32,7 +32,7 @@
 PowerShell을 열고 실행합니다. 관리자 권한으로 시작하지 않아도 됩니다.
 
 ```powershell
-irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
+irm https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main/bootstrap.ps1 | iex
 ```
 
 ### macOS
@@ -40,7 +40,7 @@ irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main
 Terminal을 열고 실행합니다.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main/setup.sh | bash
 ```
 
 ## 설치 전 확인
@@ -50,13 +50,13 @@ curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-set
 Windows:
 
 ```powershell
-irm https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/bootstrap.ps1
+irm https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main/bootstrap.ps1
 ```
 
 macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tgtec26-crypto/snug-vibe-coding-setup/main/setup.sh
+curl -fsSL https://raw.githubusercontent.com/tgtec26/snug-vibe-coding-setup/main/setup.sh
 ```
 
 내용을 확인한 뒤 위의 빠른 설치 명령을 실행합니다.
